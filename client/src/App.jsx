@@ -4,13 +4,14 @@ import ProtectedRoute from './components/ProtectedRoute';
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
 import SocialPublisher from './pages/SocialPublisher';
+import SocialAnalytics from './pages/SocialAnalytics';
 import UserManagement from './pages/UserManagement';
 
 function MainLayout() {
   const [theme, setTheme] = useState(() => {
     return localStorage.getItem('fidsor-theme') || 'dark';
   });
-  const [activeTab, setActiveTab] = useState('publisher');
+  const [activeTab, setActiveTab] = useState('analytics');
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
@@ -28,6 +29,7 @@ function MainLayout() {
         <div className="main-content">
           <Header theme={theme} toggleTheme={toggleTheme} />
           <main>
+            {(activeTab === 'analytics' || activeTab === 'dashboard') && <SocialAnalytics />}
             {activeTab === 'publisher' && <SocialPublisher />}
             {activeTab === 'users' && (
               <ProtectedRoute adminOnly>
@@ -40,6 +42,7 @@ function MainLayout() {
     </ProtectedRoute>
   );
 }
+
 
 export default function App() {
   return (

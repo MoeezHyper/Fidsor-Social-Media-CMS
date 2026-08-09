@@ -46,10 +46,15 @@ export default function Sidebar({ activeTab, onSelectTab }) {
           </button>
         )}
 
-        <a href="#dashboard" className="nav-item">
+        <button
+          className={`nav-item ${activeTab === 'analytics' || activeTab === 'dashboard' ? 'active' : ''}`}
+          onClick={() => onSelectTab('analytics')}
+          style={{ background: 'none', border: 'none', width: '100%', cursor: 'pointer', textAlign: 'left' }}
+          id="nav-social-analytics"
+        >
           <LayoutDashboard size={18} />
-          <span>Dashboard</span>
-        </a>
+          <span>Social Analytics</span>
+        </button>
 
         <a href="#posts" className="nav-item">
           <FileText size={18} />
@@ -67,3 +72,4 @@ export default function Sidebar({ activeTab, onSelectTab }) {
     </aside>
   );
 }
+

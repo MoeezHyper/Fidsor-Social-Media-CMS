@@ -1,4 +1,10 @@
-import { publishToFacebook, publishToInstagram } from '../services/metaGraph.service.js';
+import {
+  publishToFacebook,
+  publishToInstagram,
+  getAccountInfo as getAccountInfoService,
+  getSocialAnalytics as getSocialAnalyticsService,
+  getSocialPosts as getSocialPostsService
+} from '../services/metaGraph.service.js';
 import { supabaseAdmin, isSupabaseConfigured } from '../config/supabase.js';
 
 export const publishSocialPost = async (req, res) => {
@@ -93,3 +99,58 @@ export const publishSocialPost = async (req, res) => {
     });
   }
 };
+
+/**
+ * GET /api/social/account-info
+ * Fetches basic account profiles for connected FB Page and Instagram Business accounts
+ */
+export const getAccountInfo = async (req, res) => {
+  try {
+    const forceRefresh = req.query.forceRefresh === 'true';
+    const data = await getAccountInfoService({ forceRefresh });
+    return res.status(200).json(data);
+  } catch (error) {
+    console.error('Error in getAccountInfo controller:', error);
+    return res.status(500).json({
+      error: 'Internal Server Error',
+      message: error.message || 'Failed to fetch social account information.'
+    });
+  }
+};
+
+/**
+ * GET /api/social/analytics
+ * Aggregates summary statistics across platforms (total posts, total followers, per-platform breakdown)
+ */
+export const getSocialAnalytics = async (req, res) => {
+  try {
+    const forceRefresh = req.query.forceRefresh === 'true';
+    const data = await getSocialAnalyticsService({ forceRefresh });
+    return res.status(200).json(data);
+  } catch (error) {
+    console.error('Error in getSocialAnalytics controller:', error);
+    return res.status(500).json({
+      error: 'Internal Server Error',
+      message: error.message || 'Failed to aggregate social media analytics.'
+    });
+  }
+};
+
+/**
+ * GET /api/social/posts
+ * Fetches recent uploaded posts/images from Facebook and Instagram normalized into a single array
+ */
+export const getSocialPosts = async (req, res) => {
+  try {
+    const forceRefresh = req.query.forceRefresh === 'true';
+    const data = await getSocialPostsService({ forceRefresh });
+    return res.status(200).json(data);
+  } catch (error) {
+    console.error('Error in getSocialPosts controller:', error);
+    return res.status(500).json({
+      error: 'Internal Server Error',
+      message: error.message || 'Failed to fetch social posts.'
+    });
+  }
+};
+
