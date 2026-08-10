@@ -12,6 +12,7 @@ function MainLayout() {
     return localStorage.getItem('fidsor-theme') || 'dark';
   });
   const [activeTab, setActiveTab] = useState('analytics');
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
@@ -22,12 +23,31 @@ function MainLayout() {
     setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'));
   };
 
+  const toggleSidebar = () => {
+    setSidebarOpen((prev) => !prev);
+  };
+
+  const handleSelectTab = (tab) => {
+    setActiveTab(tab);
+    setSidebarOpen(false);
+  };
+
   return (
     <ProtectedRoute>
       <div className="app-container">
-        <Sidebar activeTab={activeTab} onSelectTab={setActiveTab} />
+        <Sidebar
+          activeTab={activeTab}
+          onSelectTab={handleSelectTab}
+          isOpen={sidebarOpen}
+          onClose={() => setSidebarOpen(false)}
+        />
         <div className="main-content">
-          <Header theme={theme} toggleTheme={toggleTheme} />
+          <Header
+            theme={theme}
+            toggleTheme={toggleTheme}
+            toggleSidebar={toggleSidebar}
+            isSidebarOpen={sidebarOpen}
+          />
           <main>
             {(activeTab === 'analytics' || activeTab === 'dashboard') && <SocialAnalytics />}
             {activeTab === 'publisher' && <SocialPublisher />}

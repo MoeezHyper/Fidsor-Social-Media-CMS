@@ -82,16 +82,18 @@ export default function SocialPublisher() {
 
   return (
     <div className="page-wrapper">
-      <div style={{ marginBottom: '1.5rem' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-          <h1 style={{ fontSize: '1.75rem', fontWeight: 800, color: 'var(--text-main)', letterSpacing: '-0.02em' }}>
-            Social Media Publisher
-          </h1>
-          <Sparkles size={22} style={{ color: 'var(--accent-primary)' }} />
+      <div className="page-header-bar">
+        <div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap' }}>
+            <h1 className="page-title">
+              Social Media Publisher
+            </h1>
+            <Sparkles size={22} style={{ color: 'var(--accent-primary)' }} />
+          </div>
+          <p className="page-subtitle">
+            Compose and publish image posts directly to your Facebook Page and Instagram Business accounts using Meta Graph API.
+          </p>
         </div>
-        <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', marginTop: '0.25rem' }}>
-          Compose and publish image posts directly to your Facebook Page and Instagram Business accounts using Meta Graph API.
-        </p>
       </div>
 
       <form onSubmit={handlePublishSubmit}>

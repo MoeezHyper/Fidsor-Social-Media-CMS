@@ -32,22 +32,22 @@ export default function Login() {
 
   return (
     <div
+      className="login-container"
       style={{
         minHeight: '100vh',
-        width: '100vw',
+        width: '100%',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         background: 'var(--bg-dark)',
-        padding: '1.5rem'
+        padding: '1rem'
       }}
     >
       <div
-        className="panel-card"
+        className="panel-card login-panel-card"
         style={{
           width: '100%',
           maxWidth: '440px',
-          padding: '2.5rem 2rem',
           borderRadius: 'var(--radius-lg)',
           boxShadow: 'var(--shadow-card)',
           position: 'relative',

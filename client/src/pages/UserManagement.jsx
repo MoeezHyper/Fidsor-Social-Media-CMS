@@ -116,20 +116,20 @@ export default function UserManagement() {
 
   return (
     <div className="page-wrapper">
-      <div style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+      <div className="page-header-bar">
         <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-            <h1 style={{ fontSize: '1.75rem', fontWeight: 800, color: 'var(--text-main)', letterSpacing: '-0.02em' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap' }}>
+            <h1 className="page-title">
               User Management
             </h1>
             <Shield size={22} style={{ color: 'var(--accent-primary)' }} />
           </div>
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', marginTop: '0.25rem' }}>
+          <p className="page-subtitle">
             Create CMS users (Username & Password) and manage granular Facebook and Instagram posting permissions.
           </p>
         </div>
 
-        <button className="btn-secondary" onClick={loadUsers} title="Refresh User List">
+        <button className="btn-secondary refresh-btn" onClick={loadUsers} title="Refresh User List">
           <RefreshCw size={16} />
           <span>Refresh</span>
         </button>
@@ -175,7 +175,7 @@ export default function UserManagement() {
         </div>
       )}
 
-      <div style={{ display: 'grid', gridTemplateColumns: '340px 1fr', gap: '2rem' }}>
+      <div className="user-mgmt-grid">
         {/* Left Column: Create User Form (2 Fields: Username & Password) */}
         <div className="panel-card" style={{ height: 'fit-content' }}>
           <div className="section-header">
@@ -286,8 +286,12 @@ export default function UserManagement() {
               No user accounts found.
             </div>
           ) : (
-            <div style={{ overflowX: 'auto' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.9rem' }}>
+            <>
+              <div className="mobile-table-swipe-hint">
+                ← Swipe table left/right to view permissions & actions →
+              </div>
+              <div className="table-responsive">
+                <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.9rem', minWidth: '520px' }}>
                 <thead>
                   <tr style={{ borderBottom: '1px solid var(--border-color)', color: 'var(--text-muted)', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                     <th style={{ padding: '0.85rem 1rem' }}>User</th>
@@ -365,6 +369,7 @@ export default function UserManagement() {
                 </tbody>
               </table>
             </div>
+          </>
           )}
         </div>
       </div>

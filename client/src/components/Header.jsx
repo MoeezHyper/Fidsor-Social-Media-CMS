@@ -1,95 +1,144 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { User, Bell, Sun, Moon, LogOut } from 'lucide-react';
+import { User, Bell, Sun, Moon, LogOut, Menu, X, ChevronDown } from 'lucide-react';
 
-export default function Header({ theme, toggleTheme }) {
+export default function Header({ theme, toggleTheme, toggleSidebar, isSidebarOpen }) {
   const { profile, user, logout } = useAuth();
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
 
   const username = profile?.username || user?.user_metadata?.username || user?.email?.split('@')[0] || 'Administrator';
   const role = profile?.role || 'user';
 
   return (
     <header className="header">
-      <div className="header-title-group">
-        <h2 style={{ fontSize: '1.2rem', fontWeight: 700, color: 'var(--header-title-color)' }}>Admin CMS</h2>
-        <span className="header-badge">Meta Graph v19.0</span>
+      <div className="header-left">
+        <button
+          className="hamburger-btn"
+          onClick={toggleSidebar}
+          aria-label={isSidebarOpen ? 'Close Menu' : 'Open Menu'}
+          id="mobile-hamburger-btn"
+        >
+          {isSidebarOpen ? <X size={22} /> : <Menu size={22} />}
+        </button>
+
+        <div className="header-title-group">
+          <h2 className="header-title">Admin CMS</h2>
+          <span className="header-badge">Meta Graph v19.0</span>
+        </div>
       </div>
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
+      <div className="header-actions">
+        {/* Desktop Theme Toggle & Notifications */}
         <button
-          className="theme-toggle-btn"
+          className="theme-toggle-btn desktop-only-btn"
           onClick={toggleTheme}
           title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
           id="theme-toggle-button"
         >
           {theme === 'dark' ? <Sun size={18} color="#f59e0b" /> : <Moon size={18} color="#6366f1" />}
-          <span style={{ fontSize: '0.85rem', fontWeight: 600 }}>
+          <span className="theme-toggle-label">
             {theme === 'dark' ? 'Light' : 'Dark'}
           </span>
         </button>
 
         <button
-          className="btn-secondary"
+          className="btn-secondary header-icon-btn desktop-only-btn"
           style={{ padding: '0.5rem', borderRadius: '50%' }}
           title="Notifications"
         >
           <Bell size={18} />
         </button>
 
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.75rem',
-            padding: '0.35rem 0.75rem',
-            borderRadius: 'var(--radius-full)',
-            background: 'var(--dropzone-bg)',
-            border: '1px solid var(--border-color)'
-          }}
-        >
+        {/* User Pill & Mobile User Menu Trigger */}
+        <div className="header-user-wrapper">
           <div
-            style={{
-              width: '30px',
-              height: '30px',
-              borderRadius: '50%',
-              background: 'var(--accent-gradient)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: '#fff',
-              fontWeight: 'bold',
-              fontSize: '0.85rem'
-            }}
+            className="header-user-pill"
+            onClick={() => setUserMenuOpen(!userMenuOpen)}
+            role="button"
+            tabIndex={0}
           >
-            {username.charAt(0).toUpperCase()}
+            <div className="header-user-avatar">
+              {username.charAt(0).toUpperCase()}
+            </div>
+
+            <div className="header-user-details">
+              <span className="header-user-name">
+                {username}
+              </span>
+              <span className="header-user-role">
+                {role}
+              </span>
+            </div>
+
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                logout();
+              }}
+              className="header-logout-btn desktop-only-btn"
+              title="Sign Out"
+              id="logout-button"
+            >
+              <LogOut size={16} />
+            </button>
+
+            <ChevronDown size={14} className="mobile-chevron-icon" />
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 1.2 }}>
-            <span style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--text-main)' }}>
-              {username}
-            </span>
-            <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>
-              {role}
-            </span>
-          </div>
+          {/* Mobile User Popover Menu */}
+          {userMenuOpen && (
+            <>
+              <div
+                className="mobile-popover-backdrop"
+                onClick={() => setUserMenuOpen(false)}
+              />
+              <div className="mobile-user-popover">
+                <div className="popover-user-info">
+                  <div className="header-user-avatar" style={{ width: '38px', height: '38px', fontSize: '1rem' }}>
+                    {username.charAt(0).toUpperCase()}
+                  </div>
+                  <div>
+                    <div style={{ fontWeight: 700, color: 'var(--text-main)', fontSize: '0.95rem' }}>{username}</div>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>{role}</div>
+                  </div>
+                </div>
 
-          <button
-            onClick={logout}
-            style={{
-              background: 'none',
-              border: 'none',
-              color: 'var(--text-muted)',
-              cursor: 'pointer',
-              marginLeft: '0.25rem',
-              display: 'flex',
-              alignItems: 'center',
-              padding: '0.2rem'
-            }}
-            title="Sign Out"
-            id="logout-button"
-          >
-            <LogOut size={16} />
-          </button>
+                <div className="popover-divider" />
+
+                <button
+                  className="popover-action-btn"
+                  onClick={() => {
+                    toggleTheme();
+                    setUserMenuOpen(false);
+                  }}
+                >
+                  {theme === 'dark' ? <Sun size={18} color="#f59e0b" /> : <Moon size={18} color="#6366f1" />}
+                  <span>{theme === 'dark' ? 'Switch to Light Theme' : 'Switch to Dark Theme'}</span>
+                </button>
+
+                <button
+                  className="popover-action-btn"
+                  onClick={() => setUserMenuOpen(false)}
+                >
+                  <Bell size={18} color="var(--accent-primary)" />
+                  <span>Notifications</span>
+                </button>
+
+                <div className="popover-divider" />
+
+                <button
+                  className="popover-action-btn logout-action"
+                  onClick={() => {
+                    setUserMenuOpen(false);
+                    logout();
+                  }}
+                >
+                  <LogOut size={18} color="var(--danger-color)" />
+                  <span style={{ color: 'var(--danger-color)' }}>Sign Out</span>
+                </button>
+              </div>
+            </>
+          )}
         </div>
       </div>
     </header>
