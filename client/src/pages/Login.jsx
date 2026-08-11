@@ -150,10 +150,22 @@ export default function Login() {
                   }}
                 />
               </div>
-              <h2 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-main)' }}>
+              <h2
+                style={{
+                  fontSize: '0.95rem',
+                  fontWeight: 800,
+                  background: 'var(--accent-gradient)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  backgroundClip: 'text',
+                  display: 'inline-block',
+                  letterSpacing: '0.05em',
+                  textTransform: 'uppercase'
+                }}
+              >
                 CMS Admin Portal
               </h2>
-              <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)', marginTop: '0.3rem' }}>
+              <p style={{ fontSize: '0.825rem', color: 'var(--text-muted)', marginTop: '0.3rem', whiteSpace: 'nowrap' }}>
                 Sign in to access Social Media Publisher & Admin controls
               </p>
             </div>
@@ -272,7 +284,6 @@ export default function Login() {
                 style={{
                   display: 'flex',
                   alignItems: 'center',
-                  justifyContent: 'space-between',
                   marginBottom: '1.5rem',
                   fontSize: '0.85rem'
                 }}
@@ -302,11 +313,8 @@ export default function Login() {
                       borderRadius: '4px'
                     }}
                   />
-                  <span>Remember me for 30 days</span>
+                  <span>Remember me</span>
                 </label>
-                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                  {rememberMe ? 'Long-term session' : 'Expires in 1 hour'}
-                </span>
               </div>
 
               <button

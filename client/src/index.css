@@ -1111,7 +1111,7 @@ body {
 }
 
 .platform-mini-badge,
-.platform-icon-badge {
+.account-avatar-wrapper .platform-icon-badge {
   position: absolute;
   bottom: 0;
   right: -2px;

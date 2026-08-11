@@ -29,21 +29,6 @@ export default function Header({ theme, toggleTheme, toggleSidebar, isSidebarOpe
         >
           {isSidebarOpen ? <X size={22} /> : <Menu size={22} />}
         </button>
-
-        <div className="header-title-group">
-          <div className="header-brand-wrapper">
-            <img
-              src="/fidsor-logo.png"
-              alt="Fidsor Logo"
-              className="header-brand-logo"
-              onError={(e) => {
-                e.target.style.display = 'none';
-              }}
-            />
-            <h2 className="header-title">CMS Admin Portal</h2>
-          </div>
-          <span className="header-badge">Meta Graph v19.0</span>
-        </div>
       </div>
 
       <div className="header-actions">

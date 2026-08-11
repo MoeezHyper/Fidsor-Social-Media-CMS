@@ -232,11 +232,6 @@ export default function SocialAnalytics() {
         <div>
           <div className="analytics-title-group">
             <h1 className="analytics-page-title">Social Media Integration & Analytics</h1>
-            {demoMode && (
-              <span className="demo-mode-badge" title="Meta Graph API credentials pending or error fallback mode">
-                <Sparkles size={14} /> Demo Preview Mode
-              </span>
-            )}
           </div>
           <p className="analytics-page-subtitle">
             Live metrics, connected social accounts, and audience growth analytics fetched directly from Meta Graph API.
@@ -511,7 +506,7 @@ export default function SocialAnalytics() {
               {/* Cross-Platform Average */}
               <div style={{ marginTop: '0.5rem', paddingTop: '0.85rem', borderTop: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>API Status</span>
-                <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--success-color)' }}>
+                <span style={{ fontSize: '0.85rem', fontWeight: 700, color: demoMode ? '#f59e0b' : 'var(--success-color)' }}>
                   {demoMode ? 'Demo View Mode' : 'Live Meta Graph API Connected'}
                 </span>
               </div>

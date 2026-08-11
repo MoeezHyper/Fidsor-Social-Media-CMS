@@ -38,10 +38,12 @@ export default function PlatformSelector({ selectedPlatforms, onTogglePlatform }
               <Facebook size={20} />
             </div>
             <div>
-              <div className="platform-name">Facebook Page</div>
-              <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
-                {canFb ? 'Meta Graph API' : 'No Permission'}
-              </div>
+              <div className="platform-name">Facebook</div>
+              {!canFb && (
+                <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
+                  No Permission
+                </div>
+              )}
             </div>
           </div>
           <div className="custom-checkbox">
@@ -65,10 +67,12 @@ export default function PlatformSelector({ selectedPlatforms, onTogglePlatform }
               <Instagram size={20} />
             </div>
             <div>
-              <div className="platform-name">Instagram Business</div>
-              <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
-                {canIg ? 'Meta Container Flow' : 'No Permission'}
-              </div>
+              <div className="platform-name">Instagram</div>
+              {!canIg && (
+                <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
+                  No Permission
+                </div>
+              )}
             </div>
           </div>
           <div className="custom-checkbox">
