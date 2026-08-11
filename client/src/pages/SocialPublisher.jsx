@@ -7,12 +7,46 @@ import { publishSocialPost } from '../api/socialApi';
 import { useAuth } from '../context/AuthContext';
 import { Send, Sparkles, AlertCircle } from 'lucide-react';
 
-export default function SocialPublisher() {
+function playPublishSuccessChime() {
+  try {
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const now = audioCtx.currentTime;
+
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(523.25, now); // C5
+    osc.frequency.exponentialRampToValueAtTime(659.25, now + 0.1); // E5
+    osc.frequency.exponentialRampToValueAtTime(783.99, now + 0.2); // G5
+    osc.frequency.exponentialRampToValueAtTime(1046.50, now + 0.3); // C6
+
+    gain.gain.setValueAtTime(0.2, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.45);
+
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+
+    osc.start(now);
+    osc.stop(now + 0.45);
+  } catch (e) {
+    console.warn('Web Audio chime unavailable:', e);
+  }
+}
+
+export default function SocialPublisher({ initialData }) {
   const { getToken } = useAuth();
   const [selectedFile, setSelectedFile] = useState(null);
-  const [previewUrl, setPreviewUrl] = useState(null);
-  const [caption, setCaption] = useState('');
-  const [selectedPlatforms, setSelectedPlatforms] = useState(['facebook', 'instagram']);
+  const [previewUrl, setPreviewUrl] = useState(initialData?.imageUrl || null);
+  const [caption, setCaption] = useState(initialData?.caption || '');
+  const [selectedPlatforms, setSelectedPlatforms] = useState(() => {
+    const fbAuto = localStorage.getItem('fidsor_auto_fb') !== 'false';
+    const igAuto = localStorage.getItem('fidsor_auto_ig') !== 'false';
+    const initial = [];
+    if (fbAuto) initial.push('facebook');
+    if (igAuto) initial.push('instagram');
+    return initial.length > 0 ? initial : ['facebook', 'instagram'];
+  });
   const [isPublishing, setIsPublishing] = useState(false);
   const [publishResults, setPublishResults] = useState(null);
   const [globalError, setGlobalError] = useState(null);
@@ -56,6 +90,10 @@ export default function SocialPublisher() {
 
       if (response && response.results) {
         setPublishResults(response.results);
+        const soundEnabled = localStorage.getItem('fidsor_sound_alerts') !== 'false';
+        if (soundEnabled) {
+          playPublishSuccessChime();
+        }
       } else {
         setGlobalError('Unexpected response from server.');
       }

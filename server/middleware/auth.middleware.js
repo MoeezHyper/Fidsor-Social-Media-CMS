@@ -4,9 +4,13 @@ import { supabaseAdmin, isSupabaseConfigured } from '../config/supabase.js';
  * Authentication Middleware validating Supabase JWT access token
  */
 export const requireAuth = async (req, res, next) => {
+  const cookieToken = req.cookies?.fidsor_auth_token;
   const authHeader = req.headers.authorization;
+  const headerToken = authHeader && authHeader.startsWith('Bearer ') ? authHeader.split(' ')[1] : null;
 
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+  const token = cookieToken || headerToken;
+
+  if (!token) {
     // If Supabase is not configured yet, allow fallback admin for local demo
     if (!isSupabaseConfigured) {
       req.user = {
@@ -20,11 +24,9 @@ export const requireAuth = async (req, res, next) => {
     }
     return res.status(401).json({
       error: 'Unauthorized',
-      message: 'Missing or invalid Authorization header.'
+      message: 'Missing or invalid authentication token.'
     });
   }
-
-  const token = authHeader.split(' ')[1];
 
   try {
     const { data: { user }, error } = await supabaseAdmin.auth.getUser(token);

@@ -6,6 +6,9 @@ import Header from './components/Header';
 import SocialPublisher from './pages/SocialPublisher';
 import SocialAnalytics from './pages/SocialAnalytics';
 import UserManagement from './pages/UserManagement';
+import ContentLibrary from './pages/ContentLibrary';
+import PublishedPosts from './pages/PublishedPosts';
+import Settings from './pages/Settings';
 
 function MainLayout() {
   const [theme, setTheme] = useState(() => {
@@ -13,6 +16,7 @@ function MainLayout() {
   });
   const [activeTab, setActiveTab] = useState('analytics');
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [publisherData, setPublisherData] = useState(null);
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
@@ -29,6 +33,12 @@ function MainLayout() {
 
   const handleSelectTab = (tab) => {
     setActiveTab(tab);
+    setSidebarOpen(false);
+  };
+
+  const handleUseInPublisher = (data) => {
+    setPublisherData(data);
+    setActiveTab('publisher');
     setSidebarOpen(false);
   };
 
@@ -50,12 +60,15 @@ function MainLayout() {
           />
           <main>
             {(activeTab === 'analytics' || activeTab === 'dashboard') && <SocialAnalytics />}
-            {activeTab === 'publisher' && <SocialPublisher />}
+            {activeTab === 'publisher' && <SocialPublisher key={publisherData?.id || publisherData?.imageUrl || 'default'} initialData={publisherData} />}
             {activeTab === 'users' && (
               <ProtectedRoute adminOnly>
                 <UserManagement />
               </ProtectedRoute>
             )}
+            {activeTab === 'library' && <ContentLibrary onUseInPublisher={handleUseInPublisher} />}
+            {activeTab === 'posts' && <PublishedPosts />}
+            {activeTab === 'settings' && <Settings />}
           </main>
         </div>
       </div>

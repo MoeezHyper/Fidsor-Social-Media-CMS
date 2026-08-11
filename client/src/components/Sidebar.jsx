@@ -16,21 +16,24 @@ export default function Sidebar({ activeTab, onSelectTab, isOpen, onClose }) {
 
       <aside className={`sidebar ${isOpen ? 'mobile-open' : ''}`}>
         <div className="sidebar-logo">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-            <img
-              src="/fidsor-logo.png"
-              alt="Fidsor Logo"
-              className="brand-logo-img"
-              onError={(e) => {
-                e.target.style.display = 'none';
-              }}
-            />
-            <img
-              src="/fidsor-favicon.png"
-              alt="Fidsor Favicon"
-              className="brand-favicon-img"
-              style={{ display: 'none', width: '32px', height: '32px' }}
-            />
+          <div className="brand-header-group">
+            <div className="brand-logo-wrapper">
+              <img
+                src="/fidsor-logo.png"
+                alt="Fidsor Logo"
+                className="brand-logo-img"
+                onError={(e) => {
+                  e.target.style.display = 'none';
+                }}
+              />
+              <img
+                src="/fidsor-favicon.png"
+                alt="Fidsor Favicon"
+                className="brand-favicon-img"
+                style={{ display: 'none', width: '32px', height: '32px' }}
+              />
+            </div>
+            <span className="brand-subtitle">Social Media CMS</span>
           </div>
 
           <button
@@ -45,9 +48,20 @@ export default function Sidebar({ activeTab, onSelectTab, isOpen, onClose }) {
 
         <nav className="sidebar-nav">
           <button
+            className={`nav-item ${activeTab === 'analytics' || activeTab === 'dashboard' ? 'active' : ''}`}
+            onClick={() => onSelectTab('analytics')}
+            style={{ background: 'none', border: 'none', width: '100%', cursor: 'pointer', textAlign: 'left' }}
+            id="nav-social-analytics"
+          >
+            <LayoutDashboard size={18} />
+            <span>Social Analytics</span>
+          </button>
+
+          <button
             className={`nav-item ${activeTab === 'publisher' ? 'active' : ''}`}
             onClick={() => onSelectTab('publisher')}
             style={{ background: 'none', border: 'none', width: '100%', cursor: 'pointer', textAlign: 'left' }}
+            id="nav-social-publisher"
           >
             <Share2 size={18} />
             <span>Social Publisher</span>
@@ -66,27 +80,34 @@ export default function Sidebar({ activeTab, onSelectTab, isOpen, onClose }) {
           )}
 
           <button
-            className={`nav-item ${activeTab === 'analytics' || activeTab === 'dashboard' ? 'active' : ''}`}
-            onClick={() => onSelectTab('analytics')}
+            className={`nav-item ${activeTab === 'library' ? 'active' : ''}`}
+            onClick={() => onSelectTab('library')}
             style={{ background: 'none', border: 'none', width: '100%', cursor: 'pointer', textAlign: 'left' }}
-            id="nav-social-analytics"
+            id="nav-content-library"
           >
-            <LayoutDashboard size={18} />
-            <span>Social Analytics</span>
-          </button>
-
-          <a href="#posts" className="nav-item" onClick={onClose}>
             <FileText size={18} />
             <span>Content Library</span>
-          </a>
-          <a href="#media" className="nav-item" onClick={onClose}>
-            <ImageIcon size={18} />
-            <span>Media Assets</span>
-          </a>
-          <a href="#settings" className="nav-item" style={{ marginTop: 'auto' }} onClick={onClose}>
+          </button>
+
+          <button
+            className={`nav-item ${activeTab === 'posts' ? 'active' : ''}`}
+            onClick={() => onSelectTab('posts')}
+            style={{ background: 'none', border: 'none', width: '100%', cursor: 'pointer', textAlign: 'left' }}
+            id="nav-published-posts"
+          >
+            <FileText size={18} />
+            <span>Published Posts</span>
+          </button>
+
+          <button
+            className={`nav-item ${activeTab === 'settings' ? 'active' : ''}`}
+            onClick={() => onSelectTab('settings')}
+            style={{ background: 'none', border: 'none', width: '100%', cursor: 'pointer', textAlign: 'left', marginTop: 'auto' }}
+            id="nav-settings"
+          >
             <Settings size={18} />
             <span>Settings</span>
-          </a>
+          </button>
         </nav>
       </aside>
     </>

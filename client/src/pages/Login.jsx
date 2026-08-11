@@ -6,6 +6,7 @@ export default function Login() {
   const { login } = useAuth();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [rememberMe, setRememberMe] = useState(true);
   const [loading, setLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [error, setError] = useState(null);
@@ -21,7 +22,7 @@ export default function Login() {
     setError(null);
 
     try {
-      await login(username, password);
+      await login(username, password, rememberMe);
       setIsSuccess(true);
     } catch (err) {
       console.error('Login failed:', err);
@@ -266,11 +267,53 @@ export default function Login() {
                 </div>
               </div>
 
+              {/* Remember Me Checkbox */}
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  marginBottom: '1.5rem',
+                  fontSize: '0.85rem'
+                }}
+              >
+                <label
+                  htmlFor="remember-me-checkbox"
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.55rem',
+                    color: 'var(--text-main)',
+                    cursor: 'pointer',
+                    userSelect: 'none',
+                    fontWeight: 500
+                  }}
+                >
+                  <input
+                    id="remember-me-checkbox"
+                    type="checkbox"
+                    checked={rememberMe}
+                    onChange={(e) => setRememberMe(e.target.checked)}
+                    style={{
+                      width: '16px',
+                      height: '16px',
+                      accentColor: 'var(--accent-primary)',
+                      cursor: 'pointer',
+                      borderRadius: '4px'
+                    }}
+                  />
+                  <span>Remember me for 30 days</span>
+                </label>
+                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                  {rememberMe ? 'Long-term session' : 'Expires in 1 hour'}
+                </span>
+              </div>
+
               <button
                 type="submit"
                 className="btn-primary"
                 disabled={loading}
-                style={{ marginTop: '0.5rem' }}
+                style={{ marginTop: '0.25rem' }}
                 id="login-submit-button"
               >
                 {loading ? (

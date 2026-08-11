@@ -5,7 +5,7 @@ import { supabase, supabaseAdmin, isSupabaseConfigured } from '../config/supabas
  */
 export const loginUser = async (req, res) => {
   try {
-    const { username, password } = req.body;
+    const { username, password, rememberMe } = req.body;
 
     if (!username || !password) {
       return res.status(400).json({ error: 'Validation Error', message: 'Username and password are required.' });
@@ -80,14 +80,37 @@ export const loginUser = async (req, res) => {
       can_publish_instagram: profile?.can_publish_instagram ?? true
     };
 
+    // 4. Set cookie session maxAge:
+    // If rememberMe is true: 30 days long-term session/refresh token
+    // Else: 1 hour short-term session (auto logged out in an hour)
+    const isLongTerm = Boolean(rememberMe);
+    const cookieMaxAge = isLongTerm ? (30 * 24 * 60 * 60 * 1000) : (60 * 60 * 1000);
+
+    res.cookie('fidsor_auth_token', session.access_token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: cookieMaxAge
+    });
+
     return res.status(200).json({
       token: session.access_token,
-      user: userProfile
+      user: userProfile,
+      rememberMe: isLongTerm,
+      expiresIn: isLongTerm ? '30 days' : '1 hour'
     });
   } catch (err) {
     console.error('Error in loginUser controller:', err);
     return res.status(500).json({ error: 'Internal Error', message: err.message });
   }
+};
+
+/**
+ * POST /api/auth/logout - Clear httpOnly auth cookie
+ */
+export const logoutUser = async (req, res) => {
+  res.clearCookie('fidsor_auth_token');
+  return res.status(200).json({ message: 'Logged out successfully' });
 };
 
 /**

@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
+import ReactDOM from 'react-dom';
 import { useAuth } from '../context/AuthContext';
 import { fetchUsers, createUserApi, updateUserPermissionsApi, deleteUserApi } from '../api/userApi';
-import { Users, UserPlus, Shield, Facebook, Instagram, Trash2, AlertCircle, CheckCircle2, RefreshCw } from 'lucide-react';
+import { Users, UserPlus, Shield, Facebook, Instagram, Trash2, AlertCircle, CheckCircle2, RefreshCw, User, Lock, Check, X, ShieldCheck, Search, Filter, ArrowUpDown, Plus } from 'lucide-react';
 
 export default function UserManagement() {
   const { getToken } = useAuth();
@@ -9,6 +10,14 @@ export default function UserManagement() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [successMsg, setSuccessMsg] = useState(null);
+
+  // Modal State
+  const [showCreateModal, setShowCreateModal] = useState(false);
+
+  // Search, Filter, and Sort State
+  const [searchQuery, setSearchQuery] = useState('');
+  const [roleFilter, setRoleFilter] = useState('all'); // 'all' | 'admin' | 'user'
+  const [sortBy, setSortBy] = useState('username_asc'); // 'username_asc' | 'username_desc' | 'role'
 
   // Form State for creating a user (strictly 2 fields: Username & Password)
   const [newUsername, setNewUsername] = useState('');
@@ -62,6 +71,7 @@ export default function UserManagement() {
       setNewPassword('');
       setCanFb(true);
       setCanIg(true);
+      setShowCreateModal(false);
       await loadUsers();
     } catch (err) {
       console.error('Create user error:', err);
@@ -114,253 +124,291 @@ export default function UserManagement() {
     }
   };
 
+  // Metrics
+  const totalUsers = users.length;
+  const adminCount = users.filter(u => u.role === 'admin' || u.username === 'admin').length;
+  const fbCount = users.filter(u => u.can_publish_facebook !== false).length;
+  const igCount = users.filter(u => u.can_publish_instagram !== false).length;
+
+  // Filtered and Sorted Users List
+  const filteredUsers = users.filter(u => {
+    const matchesSearch = (u.username || '').toLowerCase().includes(searchQuery.toLowerCase());
+    const isAdmin = u.role === 'admin' || u.username === 'admin';
+    const matchesRole = roleFilter === 'all' || (roleFilter === 'admin' ? isAdmin : !isAdmin);
+    return matchesSearch && matchesRole;
+  });
+
+  const sortedUsers = [...filteredUsers].sort((a, b) => {
+    if (sortBy === 'username_asc') {
+      return a.username.localeCompare(b.username);
+    }
+    if (sortBy === 'username_desc') {
+      return b.username.localeCompare(a.username);
+    }
+    if (sortBy === 'role') {
+      const aAdmin = a.role === 'admin' || a.username === 'admin' ? 0 : 1;
+      const bAdmin = b.role === 'admin' || b.username === 'admin' ? 0 : 1;
+      return aAdmin - bAdmin;
+    }
+    return 0;
+  });
+
   return (
     <div className="page-wrapper">
-      <div className="page-header-bar">
+      {/* Header Bar */}
+      <div className="page-header-bar" style={{ marginBottom: '2.25rem' }}>
         <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap' }}>
-            <h1 className="page-title">
-              User Management
-            </h1>
-            <Shield size={22} style={{ color: 'var(--accent-primary)' }} />
+          <div className="header-title-wrapper">
+            <h1 className="page-title">User Management</h1>
+            <span className="badge-pill-accent">
+              <ShieldCheck size={14} />
+              Access Control
+            </span>
           </div>
-          <p className="page-subtitle">
-            Create CMS users (Username & Password) and manage granular Facebook and Instagram posting permissions.
+          <p className="page-subtitle" style={{ marginTop: '0.4rem' }}>
+            Manage user accounts, credentials, and platform publishing access rights.
           </p>
         </div>
-
-        <button className="btn-secondary refresh-btn" onClick={loadUsers} title="Refresh User List">
-          <RefreshCw size={16} />
-          <span>Refresh</span>
-        </button>
       </div>
 
+      {/* Metrics Banner */}
+      <div className="user-mgmt-stats-grid">
+        <div className="stat-mini-card">
+          <div className="stat-icon-bg icon-indigo">
+            <Users size={18} />
+          </div>
+          <div className="stat-mini-details">
+            <span className="stat-mini-value">{loading ? '...' : totalUsers}</span>
+            <span className="stat-mini-label">Total Accounts</span>
+          </div>
+        </div>
+
+        <div className="stat-mini-card">
+          <div className="stat-icon-bg icon-purple">
+            <Shield size={18} />
+          </div>
+          <div className="stat-mini-details">
+            <span className="stat-mini-value">{loading ? '...' : adminCount}</span>
+            <span className="stat-mini-label">Admins</span>
+          </div>
+        </div>
+
+        <div className="stat-mini-card">
+          <div className="stat-icon-bg icon-blue">
+            <Facebook size={18} />
+          </div>
+          <div className="stat-mini-details">
+            <span className="stat-mini-value">{loading ? '...' : fbCount}</span>
+            <span className="stat-mini-label">FB Publishing Enabled</span>
+          </div>
+        </div>
+
+        <div className="stat-mini-card">
+          <div className="stat-icon-bg icon-pink">
+            <Instagram size={18} />
+          </div>
+          <div className="stat-mini-details">
+            <span className="stat-mini-value">{loading ? '...' : igCount}</span>
+            <span className="stat-mini-label">IG Publishing Enabled</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Alert Banners */}
       {error && (
-        <div
-          style={{
-            background: 'var(--danger-bg)',
-            border: '1px solid rgba(239, 68, 68, 0.3)',
-            borderRadius: 'var(--radius-md)',
-            padding: '0.85rem 1rem',
-            color: 'var(--danger-color)',
-            fontSize: '0.9rem',
-            marginBottom: '1.5rem',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.6rem'
-          }}
-        >
-          <AlertCircle size={20} style={{ flexShrink: 0 }} />
+        <div className="alert-banner alert-banner-danger">
+          <AlertCircle size={18} style={{ flexShrink: 0 }} />
           <span>{error}</span>
+          <button className="alert-dismiss" onClick={() => setError(null)}>
+            <X size={14} />
+          </button>
         </div>
       )}
 
       {successMsg && (
-        <div
-          style={{
-            background: 'var(--success-bg)',
-            border: '1px solid rgba(16, 185, 129, 0.3)',
-            borderRadius: 'var(--radius-md)',
-            padding: '0.85rem 1rem',
-            color: 'var(--success-color)',
-            fontSize: '0.9rem',
-            marginBottom: '1.5rem',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.6rem'
-          }}
-        >
-          <CheckCircle2 size={20} style={{ flexShrink: 0 }} />
+        <div className="alert-banner alert-banner-success">
+          <CheckCircle2 size={18} style={{ flexShrink: 0 }} />
           <span>{successMsg}</span>
+          <button className="alert-dismiss" onClick={() => setSuccessMsg(null)}>
+            <X size={14} />
+          </button>
         </div>
       )}
 
-      <div className="user-mgmt-grid">
-        {/* Left Column: Create User Form (2 Fields: Username & Password) */}
-        <div className="panel-card" style={{ height: 'fit-content' }}>
-          <div className="section-header">
+      {/* Main Full Width User Table Card */}
+      <div className="panel-card user-table-card full-width-card">
+        <div className="section-header-row">
+          <div>
             <h3 className="section-title">
-              <UserPlus size={20} style={{ color: 'var(--accent-primary)' }} />
-              Add New User
+              <Users size={19} style={{ color: 'var(--accent-primary)' }} />
+              System Accounts & Access Rights
             </h3>
-            <p className="section-subtitle">Only Username and Password required</p>
+            <p className="section-subtitle">Search, filter, and manage platform permissions for CMS users</p>
           </div>
 
-          <form onSubmit={handleCreateUser}>
-            <div style={{ marginBottom: '1.25rem' }}>
-              <label
-                htmlFor="new-username"
-                style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-main)', marginBottom: '0.4rem' }}
-              >
-                Username
-              </label>
-              <input
-                id="new-username"
-                type="text"
-                className="custom-textarea"
-                style={{ minHeight: 'auto', height: '42px', paddingTop: 0, paddingBottom: 0 }}
-                placeholder="e.g. editor1"
-                value={newUsername}
-                onChange={(e) => setNewUsername(e.target.value)}
-                required
-              />
-            </div>
-
-            <div style={{ marginBottom: '1.25rem' }}>
-              <label
-                htmlFor="new-password"
-                style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-main)', marginBottom: '0.4rem' }}
-              >
-                Password
-              </label>
-              <input
-                id="new-password"
-                type="password"
-                className="custom-textarea"
-                style={{ minHeight: 'auto', height: '42px', paddingTop: 0, paddingBottom: 0 }}
-                placeholder="Minimum 6 characters"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                required
-              />
-            </div>
-
-            {/* Initial Permissions Checklist */}
-            <div style={{ marginBottom: '1.5rem', background: 'var(--dropzone-bg)', padding: '1rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)' }}>
-              <span style={{ fontSize: '0.825rem', fontWeight: 700, color: 'var(--text-main)', display: 'block', marginBottom: '0.6rem' }}>
-                Initial Platform Rights:
-              </span>
-              <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem', color: 'var(--text-main)', cursor: 'pointer', marginBottom: '0.4rem' }}>
-                <input
-                  type="checkbox"
-                  checked={canFb}
-                  onChange={(e) => setCanFb(e.target.checked)}
-                />
-                <Facebook size={16} style={{ color: 'var(--facebook-color)' }} />
-                <span>Facebook Posting</span>
-              </label>
-              <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem', color: 'var(--text-main)', cursor: 'pointer' }}>
-                <input
-                  type="checkbox"
-                  checked={canIg}
-                  onChange={(e) => setCanIg(e.target.checked)}
-                />
-                <Instagram size={16} style={{ color: '#dc2743' }} />
-                <span>Instagram Posting</span>
-              </label>
-            </div>
-
-            <button type="submit" className="btn-primary" disabled={creating} id="create-user-submit">
-              {creating ? (
-                <>
-                  <div className="spinner" />
-                  <span>Creating User...</span>
-                </>
-              ) : (
-                <>
-                  <UserPlus size={18} />
-                  <span>Create User</span>
-                </>
-              )}
+          <div className="header-action-toolbar">
+            <button
+              className="btn-add-user-primary"
+              onClick={() => setShowCreateModal(true)}
+              id="open-create-user-modal"
+            >
+              <UserPlus size={16} />
+              <span>Add New User</span>
             </button>
-          </form>
+
+            <button className="btn-refresh-secondary" onClick={loadUsers} title="Refresh User List">
+              <RefreshCw size={15} className={loading ? 'spin-icon' : ''} />
+              <span>Refresh</span>
+            </button>
+          </div>
         </div>
 
-        {/* Right Column: Users List & Platform Permissions Table */}
-        <div className="panel-card">
-          <div className="section-header">
-            <h3 className="section-title">
-              <Users size={20} style={{ color: 'var(--accent-primary)' }} />
-              System Accounts & Permissions
-            </h3>
-            <p className="section-subtitle">Toggle platform access rights for each CMS user account</p>
+        {/* Filter & Search Controls Bar */}
+        <div className="table-controls-bar">
+          {/* Search Box */}
+          <div className="search-input-wrapper">
+            <Search size={15} className="search-icon" />
+            <input
+              type="text"
+              className="search-input"
+              placeholder="Search username..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+            {searchQuery && (
+              <button className="clear-search-btn" onClick={() => setSearchQuery('')}>
+                <X size={13} />
+              </button>
+            )}
           </div>
 
-          {loading ? (
-            <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-muted)' }}>
-              <div className="spinner" style={{ margin: '0 auto 1rem auto' }} />
-              <span>Loading user accounts...</span>
+          {/* Filter & Sort Controls */}
+          <div className="filter-sort-group">
+            <div className="role-filter-pills">
+              <button
+                className={`filter-pill ${roleFilter === 'all' ? 'active' : ''}`}
+                onClick={() => setRoleFilter('all')}
+              >
+                All ({users.length})
+              </button>
+              <button
+                className={`filter-pill ${roleFilter === 'admin' ? 'active' : ''}`}
+                onClick={() => setRoleFilter('admin')}
+              >
+                Admins ({users.filter(u => u.role === 'admin' || u.username === 'admin').length})
+              </button>
+              <button
+                className={`filter-pill ${roleFilter === 'user' ? 'active' : ''}`}
+                onClick={() => setRoleFilter('user')}
+              >
+                Users ({users.filter(u => u.role !== 'admin' && u.username !== 'admin').length})
+              </button>
             </div>
-          ) : users.length === 0 ? (
-            <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-muted)' }}>
-              No user accounts found.
+
+            <div className="sort-dropdown-wrapper">
+              <ArrowUpDown size={14} className="sort-icon" />
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+                className="sort-select"
+              >
+                <option value="username_asc">Sort: A to Z</option>
+                <option value="username_desc">Sort: Z to A</option>
+                <option value="role">Sort: Admins First</option>
+              </select>
             </div>
-          ) : (
-            <>
-              <div className="mobile-table-swipe-hint">
-                ← Swipe table left/right to view permissions & actions →
-              </div>
-              <div className="table-responsive">
-                <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.9rem', minWidth: '520px' }}>
+          </div>
+        </div>
+
+        {loading ? (
+          <div className="state-placeholder">
+            <div className="spinner" />
+            <span>Loading user accounts...</span>
+          </div>
+        ) : sortedUsers.length === 0 ? (
+          <div className="state-placeholder">
+            <span>{searchQuery || roleFilter !== 'all' ? 'No users match your filter criteria.' : 'No user accounts found.'}</span>
+          </div>
+        ) : (
+          <>
+            <div className="mobile-table-swipe-hint">
+              ← Swipe table left/right to view rights & actions →
+            </div>
+            <div className="table-responsive">
+              <table className="user-minimal-table">
                 <thead>
-                  <tr style={{ borderBottom: '1px solid var(--border-color)', color: 'var(--text-muted)', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                    <th style={{ padding: '0.85rem 1rem' }}>User</th>
-                    <th style={{ padding: '0.85rem 1rem' }}>Role</th>
-                    <th style={{ padding: '0.85rem 1rem' }}>Facebook Rights</th>
-                    <th style={{ padding: '0.85rem 1rem' }}>Instagram Rights</th>
-                    <th style={{ padding: '0.85rem 1rem', textAlign: 'right' }}>Action</th>
+                  <tr>
+                    <th>User Account</th>
+                    <th>Role</th>
+                    <th>Facebook Access</th>
+                    <th>Instagram Access</th>
+                    <th style={{ textAlign: 'right' }}>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {users.map((u) => {
+                  {sortedUsers.map((u) => {
                     const isAdmin = u.role === 'admin' || u.username === 'admin';
+                    const initialLetter = (u.username || 'U').charAt(0).toUpperCase();
 
                     return (
-                      <tr key={u.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
-                        <td style={{ padding: '1rem', fontWeight: 600, color: 'var(--text-main)' }}>
-                          {u.username}
+                      <tr key={u.id} className={isAdmin ? 'row-admin' : ''}>
+                        <td>
+                          <div className="user-table-name-cell">
+                            <div className={`user-avatar-badge ${isAdmin ? 'avatar-admin' : 'avatar-user'}`}>
+                              {initialLetter}
+                            </div>
+                            <span className="user-table-username">{u.username}</span>
+                          </div>
                         </td>
-                        <td style={{ padding: '1rem' }}>
-                          <span
-                            style={{
-                              fontSize: '0.75rem',
-                              fontWeight: 700,
-                              padding: '0.2rem 0.6rem',
-                              borderRadius: 'var(--radius-full)',
-                              background: isAdmin ? 'rgba(99, 102, 241, 0.15)' : 'rgba(255, 255, 255, 0.08)',
-                              color: isAdmin ? 'var(--accent-primary)' : 'var(--text-muted)',
-                              textTransform: 'uppercase'
-                            }}
-                          >
+                        <td>
+                          <span className={`user-role-badge ${isAdmin ? 'role-admin' : 'role-user'}`}>
+                            {isAdmin && <Shield size={11} />}
                             {u.role || 'user'}
                           </span>
                         </td>
-                        <td style={{ padding: '1rem' }}>
-                          <label style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
-                            <input
-                              type="checkbox"
-                              checked={u.can_publish_facebook !== false}
-                              onChange={() => handleTogglePermission(u, 'can_publish_facebook', u.can_publish_facebook !== false)}
-                              disabled={isAdmin}
-                            />
-                            <span style={{ fontSize: '0.85rem', color: u.can_publish_facebook !== false ? 'var(--text-main)' : 'var(--text-dim)' }}>
-                              {u.can_publish_facebook !== false ? 'Allowed' : 'Disabled'}
+                        <td>
+                          <div className="switch-cell">
+                            <label className={`switch-toggle ${isAdmin ? 'disabled' : ''}`}>
+                              <input
+                                type="checkbox"
+                                checked={u.can_publish_facebook !== false}
+                                onChange={() => handleTogglePermission(u, 'can_publish_facebook', u.can_publish_facebook !== false)}
+                                disabled={isAdmin}
+                              />
+                              <span className="switch-slider" />
+                            </label>
+                            <span className={`switch-status-text ${u.can_publish_facebook !== false ? 'status-active' : 'status-disabled'}`}>
+                              {u.can_publish_facebook !== false ? 'Allowed' : 'Off'}
                             </span>
-                          </label>
+                          </div>
                         </td>
-                        <td style={{ padding: '1rem' }}>
-                          <label style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
-                            <input
-                              type="checkbox"
-                              checked={u.can_publish_instagram !== false}
-                              onChange={() => handleTogglePermission(u, 'can_publish_instagram', u.can_publish_instagram !== false)}
-                              disabled={isAdmin}
-                            />
-                            <span style={{ fontSize: '0.85rem', color: u.can_publish_instagram !== false ? 'var(--text-main)' : 'var(--text-dim)' }}>
-                              {u.can_publish_instagram !== false ? 'Allowed' : 'Disabled'}
+                        <td>
+                          <div className="switch-cell">
+                            <label className={`switch-toggle ${isAdmin ? 'disabled' : ''}`}>
+                              <input
+                                type="checkbox"
+                                checked={u.can_publish_instagram !== false}
+                                onChange={() => handleTogglePermission(u, 'can_publish_instagram', u.can_publish_instagram !== false)}
+                                disabled={isAdmin}
+                              />
+                              <span className="switch-slider" />
+                            </label>
+                            <span className={`switch-status-text ${u.can_publish_instagram !== false ? 'status-active' : 'status-disabled'}`}>
+                              {u.can_publish_instagram !== false ? 'Allowed' : 'Off'}
                             </span>
-                          </label>
+                          </div>
                         </td>
-                        <td style={{ padding: '1rem', textAlign: 'right' }}>
-                          {!isAdmin && (
+                        <td style={{ textAlign: 'right' }}>
+                          {!isAdmin ? (
                             <button
-                              className="btn-secondary"
-                              style={{ padding: '0.4rem 0.6rem', color: 'var(--danger-color)', borderColor: 'rgba(239, 68, 68, 0.3)' }}
+                              className="icon-action-btn delete-action"
                               onClick={() => handleDeleteUser(u)}
                               title="Delete user"
                             >
-                              <Trash2 size={15} />
+                              <Trash2 size={16} />
                             </button>
+                          ) : (
+                            <span className="protected-tag" title="Admin account protected">Protected</span>
                           )}
                         </td>
                       </tr>
@@ -370,9 +418,135 @@ export default function UserManagement() {
               </table>
             </div>
           </>
-          )}
-        </div>
+        )}
       </div>
+
+      {/* Add New User Modal Dialog */}
+      {showCreateModal && ReactDOM.createPortal(
+        <div className="modal-backdrop">
+          <div className="modal-card user-create-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-card-header">
+              <div>
+                <h3 className="modal-card-title">
+                  <UserPlus size={19} style={{ color: 'var(--accent-primary)' }} />
+                  Add New User Account
+                </h3>
+                <p className="modal-card-subtitle">Create CMS credentials and assign posting permissions</p>
+              </div>
+              <button
+                type="button"
+                className="modal-close-icon-btn"
+                onClick={() => setShowCreateModal(false)}
+                title="Close Modal"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <form onSubmit={handleCreateUser} className="user-create-form">
+              <div className="form-group">
+                <label htmlFor="new-username" className="form-label">
+                  Username
+                </label>
+                <div className="input-with-icon">
+                  <User size={16} className="field-icon" />
+                  <input
+                    id="new-username"
+                    type="text"
+                    className="custom-textarea minimal-input"
+                    placeholder="e.g. social_editor"
+                    value={newUsername}
+                    onChange={(e) => setNewUsername(e.target.value)}
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="new-password" className="form-label">
+                  Password
+                </label>
+                <div className="input-with-icon">
+                  <Lock size={16} className="field-icon" />
+                  <input
+                    id="new-password"
+                    type="password"
+                    className="custom-textarea minimal-input"
+                    placeholder="Minimum 6 characters"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    required
+                  />
+                </div>
+              </div>
+
+              {/* Initial Permissions Selection Box */}
+              <div className="rights-selection-box">
+                <span className="rights-box-title">Initial Platform Rights</span>
+                
+                <div className="rights-toggle-row">
+                  <div className="rights-info">
+                    <Facebook size={17} style={{ color: 'var(--facebook-color)' }} />
+                    <span>Facebook Publishing</span>
+                  </div>
+                  <label className="switch-toggle">
+                    <input
+                      type="checkbox"
+                      checked={canFb}
+                      onChange={(e) => setCanFb(e.target.checked)}
+                    />
+                    <span className="switch-slider" />
+                  </label>
+                </div>
+
+                <div className="rights-toggle-row">
+                  <div className="rights-info">
+                    <Instagram size={17} style={{ color: '#dc2743' }} />
+                    <span>Instagram Publishing</span>
+                  </div>
+                  <label className="switch-toggle">
+                    <input
+                      type="checkbox"
+                      checked={canIg}
+                      onChange={(e) => setCanIg(e.target.checked)}
+                    />
+                    <span className="switch-slider" />
+                  </label>
+                </div>
+              </div>
+
+              <div className="modal-actions-row">
+                <button
+                  type="button"
+                  className="modal-btn-secondary"
+                  onClick={() => setShowCreateModal(false)}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="modal-btn-primary"
+                  disabled={creating}
+                  id="create-user-submit"
+                >
+                  {creating ? (
+                    <>
+                      <div className="spinner" style={{ width: '16px', height: '16px' }} />
+                      <span>Creating Account...</span>
+                    </>
+                  ) : (
+                    <>
+                      <UserPlus size={16} />
+                      <span>Create User</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>,
+        document.body
+      )}
     </div>
   );
 }

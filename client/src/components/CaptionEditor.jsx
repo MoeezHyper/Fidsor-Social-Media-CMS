@@ -18,7 +18,7 @@ export default function CaptionEditor({ caption, onChange }) {
         <textarea
           className="custom-textarea"
           rows={5}
-          placeholder="Write your caption here... (e.g. Introducing our new product lineup! 🚀)"
+          placeholder="Write your caption here... (e.g. Introducing our new product lineup!)"
           value={caption}
           onChange={(e) => onChange(e.target.value)}
           maxLength={charLimit}

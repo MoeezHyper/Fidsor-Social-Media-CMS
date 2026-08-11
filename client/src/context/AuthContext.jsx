@@ -1,39 +1,46 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import axios from 'axios';
 
+// Ensure browser sends and receives httpOnly cookies with every request
+axios.defaults.withCredentials = true;
+
 const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
-  const [token, setToken] = useState(() => localStorage.getItem('fidsor_auth_token'));
   const [loading, setLoading] = useState(true);
 
-  // Restore session on initial load via /api/auth/me
+  // Setup 401 Interceptor for automatic logout on session expiration (e.g., 1-hour session timeout)
+  useEffect(() => {
+    const interceptor = axios.interceptors.response.use(
+      (response) => response,
+      (error) => {
+        if (error.response && error.response.status === 401) {
+          setUser(null);
+          setProfile(null);
+        }
+        return Promise.reject(error);
+      }
+    );
+    return () => axios.interceptors.response.eject(interceptor);
+  }, []);
+
+  // Restore session on initial load via /api/auth/me using httpOnly cookie
   useEffect(() => {
     const initializeAuth = async () => {
-      const savedToken = localStorage.getItem('fidsor_auth_token');
-      if (!savedToken) {
-        setLoading(false);
-        return;
-      }
-
       try {
-        const res = await axios.get('/api/auth/me', {
-          headers: { Authorization: `Bearer ${savedToken}` }
-        });
+        const res = await axios.get('/api/auth/me');
         if (res.data?.user) {
           setUser(res.data.user);
           setProfile(res.data.user);
-          setToken(savedToken);
         } else {
-          localStorage.removeItem('fidsor_auth_token');
-          setToken(null);
+          setUser(null);
+          setProfile(null);
         }
       } catch (err) {
-        console.warn('Session restoration warning:', err.message);
-        localStorage.removeItem('fidsor_auth_token');
-        setToken(null);
+        setUser(null);
+        setProfile(null);
       } finally {
         setLoading(false);
       }
@@ -42,16 +49,14 @@ export const AuthProvider = ({ children }) => {
     initializeAuth();
   }, []);
 
-  // Login function accepting Username & Password via backend API
-  const login = async (username, password) => {
+  // Login function sending credentials to server to establish httpOnly cookie session
+  const login = async (username, password, rememberMe = false) => {
     try {
-      const res = await axios.post('/api/auth/login', { username, password });
-      const { token: authToken, user: userProfile } = res.data;
+      const res = await axios.post('/api/auth/login', { username, password, rememberMe });
+      const { user: userProfile } = res.data;
 
-      setToken(authToken);
       setUser(userProfile);
       setProfile(userProfile);
-      localStorage.setItem('fidsor_auth_token', authToken);
 
       return { success: true, user: userProfile };
     } catch (err) {
@@ -60,16 +65,20 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // Logout function
-  const logout = () => {
-    setUser(null);
-    setProfile(null);
-    setToken(null);
-    localStorage.removeItem('fidsor_auth_token');
+  // Logout function clearing server httpOnly cookie
+  const logout = async () => {
+    try {
+      await axios.post('/api/auth/logout');
+    } catch (err) {
+      console.warn('Logout server notification failed:', err);
+    } finally {
+      setUser(null);
+      setProfile(null);
+    }
   };
 
   const getToken = () => {
-    return token || localStorage.getItem('fidsor_auth_token') || '';
+    return 'cookie';
   };
 
   return (
