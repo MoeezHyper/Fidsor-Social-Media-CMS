@@ -131,14 +131,6 @@ export default function SocialAnalytics() {
     return localStorage.getItem('fidsor_demo_mode') === 'true';
   });
 
-  useEffect(() => {
-    const handleDemoToggle = () => {
-      setDemoMode(localStorage.getItem('fidsor_demo_mode') === 'true');
-    };
-    window.addEventListener('fidsor_demo_mode_change', handleDemoToggle);
-    return () => window.removeEventListener('fidsor_demo_mode_change', handleDemoToggle);
-  }, []);
-
   const loadDashboardData = useCallback(async (forceRefresh = false) => {
     if (forceRefresh) {
       setRefreshing(true);
@@ -157,24 +149,26 @@ export default function SocialAnalytics() {
       setAccountInfo(accData);
       setAnalytics(anaData);
       setPosts(postsData.posts || []);
-
-      // Check if both platforms returned disconnected/error states
-      const fbConn = accData?.facebook?.connected;
-      const igConn = accData?.instagram?.connected;
-      if (!fbConn && !igConn) {
-        setDemoMode(true);
-      } else {
-        setDemoMode(false);
-      }
     } catch (err) {
       console.error('Error loading social analytics dashboard:', err);
       setGlobalError(err.message || 'Failed to load social analytics data.');
-      setDemoMode(true);
     } finally {
       setLoading(false);
       setRefreshing(false);
     }
   }, [token]);
+
+  useEffect(() => {
+    const handleDemoToggle = () => {
+      const isDemo = localStorage.getItem('fidsor_demo_mode') === 'true';
+      setDemoMode(isDemo);
+      if (!isDemo) {
+        loadDashboardData(true);
+      }
+    };
+    window.addEventListener('fidsor_demo_mode_change', handleDemoToggle);
+    return () => window.removeEventListener('fidsor_demo_mode_change', handleDemoToggle);
+  }, [loadDashboardData]);
 
   useEffect(() => {
     loadDashboardData(false);
@@ -192,14 +186,19 @@ export default function SocialAnalytics() {
     return () => clearInterval(timer);
   }, [loadDashboardData]);
 
-  // Use live data if available, or demo data if in demoMode
+  // Use live data if in Live Mode, or demo data if in Demo Mode
   const activeAccountInfo = demoMode ? DEMO_ACCOUNT_INFO : accountInfo;
   const activeAnalytics = demoMode ? DEMO_ANALYTICS : analytics;
   const activePostsList = demoMode ? DEMO_POSTS : (posts || []);
 
   // Dynamic calculations for Engagement Rates & Graph scaling from live API data
-  const fbFollowers = activeAccountInfo?.facebook?.followersCount || activeAccountInfo?.facebook?.fanCount || 14850;
-  const igFollowers = activeAccountInfo?.instagram?.followersCount || 28400;
+  const fbFollowers = demoMode
+    ? (activeAccountInfo?.facebook?.followersCount || activeAccountInfo?.facebook?.fanCount || 14850)
+    : (activeAccountInfo?.facebook?.connected ? (activeAccountInfo?.facebook?.followersCount ?? activeAccountInfo?.facebook?.fanCount ?? 0) : 0);
+
+  const igFollowers = demoMode
+    ? (activeAccountInfo?.instagram?.followersCount || 28400)
+    : (activeAccountInfo?.instagram?.connected ? (activeAccountInfo?.instagram?.followersCount ?? 0) : 0);
 
   const fbPosts = activePostsList.filter(p => p.platform === 'facebook');
   const igPosts = activePostsList.filter(p => p.platform === 'instagram');
@@ -207,16 +206,20 @@ export default function SocialAnalytics() {
   const fbInteractions = fbPosts.reduce((acc, p) => acc + (p.likeCount || 0) + (p.commentCount || 0), 0);
   const igInteractions = igPosts.reduce((acc, p) => acc + (p.likeCount || 0) + (p.commentCount || 0), 0);
 
-  const liveFbRate = fbPosts.length > 0 && fbFollowers > 0
-    ? Math.min(15, Math.max(0.5, (fbInteractions / fbPosts.length / fbFollowers) * 100)).toFixed(1)
-    : '3.2';
+  const liveFbRate = demoMode
+    ? '3.2'
+    : (fbPosts.length > 0 && fbFollowers > 0
+        ? Math.min(15, Math.max(0.5, (fbInteractions / fbPosts.length / fbFollowers) * 100)).toFixed(1)
+        : '0.0');
 
-  const liveIgRate = igPosts.length > 0 && igFollowers > 0
-    ? Math.min(15, Math.max(0.5, (igInteractions / igPosts.length / igFollowers) * 100)).toFixed(1)
-    : '4.8';
+  const liveIgRate = demoMode
+    ? '4.8'
+    : (igPosts.length > 0 && igFollowers > 0
+        ? Math.min(15, Math.max(0.5, (igInteractions / igPosts.length / igFollowers) * 100)).toFixed(1)
+        : '0.0');
 
-  const fbBarPct = Math.min(100, Math.max(15, Math.round(parseFloat(liveFbRate) * 18)));
-  const igBarPct = Math.min(100, Math.max(15, Math.round(parseFloat(liveIgRate) * 18)));
+  const fbBarPct = parseFloat(liveFbRate) > 0 ? Math.min(100, Math.max(15, Math.round(parseFloat(liveFbRate) * 18))) : 0;
+  const igBarPct = parseFloat(liveIgRate) > 0 ? Math.min(100, Math.max(15, Math.round(parseFloat(liveIgRate) * 18))) : 0;
 
   const fbError = accountInfo?.facebook?.error;
   const igError = accountInfo?.instagram?.error;
@@ -278,11 +281,17 @@ export default function SocialAnalytics() {
           <div className={`account-card fb-card ${activeAccountInfo?.facebook?.connected ? 'connected' : 'disconnected'}`}>
             <div className="account-card-header">
               <div className="account-avatar-wrapper">
-                <img
-                  src={activeAccountInfo?.facebook?.picture || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=150&auto=format&fit=crop&q=80'}
-                  alt="Facebook Page Profile"
-                  className="account-avatar"
-                />
+                {demoMode || activeAccountInfo?.facebook?.picture ? (
+                  <img
+                    src={activeAccountInfo?.facebook?.picture || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=150&auto=format&fit=crop&q=80'}
+                    alt="Facebook Page Profile"
+                    className="account-avatar"
+                  />
+                ) : (
+                  <div className="account-avatar placeholder-avatar" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--dropzone-bg)', color: 'var(--text-muted)' }}>
+                    <Facebook size={24} />
+                  </div>
+                )}
                 <span className="platform-icon-badge fb-badge">
                   <Facebook size={12} />
                 </span>
@@ -294,7 +303,7 @@ export default function SocialAnalytics() {
                   </span>
                 ) : (
                   <span className="badge-disconnected">
-                    <XCircle size={13} /> Connection Error
+                    <XCircle size={13} /> Not Connected
                   </span>
                 )}
               </div>
@@ -302,10 +311,10 @@ export default function SocialAnalytics() {
 
             <div className="account-card-body">
               <h3 className="account-display-name">
-                {activeAccountInfo?.facebook?.name || 'Facebook Page'}
+                {activeAccountInfo?.facebook?.connected || demoMode ? (activeAccountInfo?.facebook?.name || 'Facebook Page') : 'Facebook Page'}
               </h3>
               <p className="account-username">
-                @{activeAccountInfo?.facebook?.username || 'facebook_page'}
+                {activeAccountInfo?.facebook?.connected || demoMode ? `@${activeAccountInfo?.facebook?.username || 'facebook_page'}` : '@not_connected'}
               </p>
             </div>
 
@@ -313,7 +322,7 @@ export default function SocialAnalytics() {
               <div className="account-metric">
                 <span className="metric-label">Followers / Page Likes</span>
                 <span className="metric-val">
-                  {loading ? '...' : ((activeAccountInfo?.facebook?.followersCount ?? activeAccountInfo?.facebook?.fanCount ?? 0)).toLocaleString()}
+                  {loading ? '...' : (activeAccountInfo?.facebook?.connected || demoMode ? ((activeAccountInfo?.facebook?.followersCount ?? activeAccountInfo?.facebook?.fanCount ?? 0)).toLocaleString() : '0')}
                 </span>
               </div>
               <div className="account-metric">
@@ -327,11 +336,17 @@ export default function SocialAnalytics() {
           <div className={`account-card ig-card ${activeAccountInfo?.instagram?.connected ? 'connected' : 'disconnected'}`}>
             <div className="account-card-header">
               <div className="account-avatar-wrapper">
-                <img
-                  src={activeAccountInfo?.instagram?.picture || activeAccountInfo?.instagram?.profilePictureUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80'}
-                  alt="Instagram Business Profile"
-                  className="account-avatar"
-                />
+                {demoMode || activeAccountInfo?.instagram?.picture || activeAccountInfo?.instagram?.profilePictureUrl ? (
+                  <img
+                    src={activeAccountInfo?.instagram?.picture || activeAccountInfo?.instagram?.profilePictureUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80'}
+                    alt="Instagram Business Profile"
+                    className="account-avatar"
+                  />
+                ) : (
+                  <div className="account-avatar placeholder-avatar" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--dropzone-bg)', color: 'var(--text-muted)' }}>
+                    <Instagram size={24} />
+                  </div>
+                )}
                 <span className="platform-icon-badge ig-badge">
                   <Instagram size={12} />
                 </span>
@@ -343,7 +358,7 @@ export default function SocialAnalytics() {
                   </span>
                 ) : (
                   <span className="badge-disconnected">
-                    <XCircle size={13} /> Connection Error
+                    <XCircle size={13} /> Not Connected
                   </span>
                 )}
               </div>
@@ -351,10 +366,10 @@ export default function SocialAnalytics() {
 
             <div className="account-card-body">
               <h3 className="account-display-name">
-                {activeAccountInfo?.instagram?.name || 'Instagram Business'}
+                {activeAccountInfo?.instagram?.connected || demoMode ? (activeAccountInfo?.instagram?.name || 'Instagram Business') : 'Instagram Business'}
               </h3>
               <p className="account-username">
-                @{activeAccountInfo?.instagram?.username || 'instagram_account'}
+                {activeAccountInfo?.instagram?.connected || demoMode ? `@${activeAccountInfo?.instagram?.username || 'instagram_account'}` : '@not_connected'}
               </p>
             </div>
 
@@ -362,7 +377,7 @@ export default function SocialAnalytics() {
               <div className="account-metric">
                 <span className="metric-label">Followers</span>
                 <span className="metric-val">
-                  {loading ? '...' : (activeAccountInfo?.instagram?.followersCount ?? 0).toLocaleString()}
+                  {loading ? '...' : (activeAccountInfo?.instagram?.connected || demoMode ? (activeAccountInfo?.instagram?.followersCount ?? 0).toLocaleString() : '0')}
                 </span>
               </div>
               <div className="account-metric">
@@ -388,7 +403,7 @@ export default function SocialAnalytics() {
             <div className="kpi-details">
               <span className="kpi-title">Total Published Posts</span>
               <h3 className="kpi-value">
-                {loading ? <span className="skeleton-line" /> : (activeAnalytics?.summary?.totalPosts ?? 0).toLocaleString()}
+                {loading ? <span className="skeleton-line" /> : (demoMode ? DEMO_ANALYTICS?.summary?.totalPosts : (activeAnalytics?.summary?.totalPosts ?? activePostsList.length)).toLocaleString()}
               </h3>
             </div>
           </div>
@@ -400,14 +415,14 @@ export default function SocialAnalytics() {
             <div className="kpi-details">
               <span className="kpi-title">Combined Audience Reach</span>
               <h3 className="kpi-value">
-                {loading ? <span className="skeleton-line" /> : (activeAnalytics?.summary?.totalFollowers ?? 0).toLocaleString()}
+                {loading ? <span className="skeleton-line" /> : (demoMode ? DEMO_ANALYTICS?.summary?.totalFollowers : (fbFollowers + igFollowers)).toLocaleString()}
               </h3>
               <div className="kpi-breakdown">
                 <span className="breakdown-tag fb-text">
-                  FB Likes: {(activeAnalytics?.platforms?.facebook?.followersCount ?? activeAnalytics?.platforms?.facebook?.fanCount ?? 0).toLocaleString()}
+                  FB Likes: {(demoMode ? (DEMO_ANALYTICS?.platforms?.facebook?.followersCount ?? 0) : fbFollowers).toLocaleString()}
                 </span>
                 <span className="breakdown-tag ig-text">
-                  IG Followers: {(activeAnalytics?.platforms?.instagram?.followersCount ?? 0).toLocaleString()}
+                  IG Followers: {(demoMode ? (DEMO_ANALYTICS?.platforms?.instagram?.followersCount ?? 0) : igFollowers).toLocaleString()}
                 </span>
               </div>
             </div>
@@ -420,10 +435,12 @@ export default function SocialAnalytics() {
             <div className="kpi-details">
               <span className="kpi-title">Connected Accounts</span>
               <h3 className="kpi-value">
-                {loading ? <span className="skeleton-line" /> : `${activeAnalytics?.summary?.connectedPlatformsCount ?? 0} / 2`}
+                {loading ? <span className="skeleton-line" /> : (demoMode ? '2 / 2' : `${(activeAccountInfo?.facebook?.connected ? 1 : 0) + (activeAccountInfo?.instagram?.connected ? 1 : 0)} / 2`)}
               </h3>
               <div className="kpi-breakdown">
-                <span className="breakdown-tag text-muted">Meta Graph API Sync Active</span>
+                <span className="breakdown-tag text-muted">
+                  {demoMode ? 'Meta Graph API Sync Active' : (activeAccountInfo?.facebook?.connected || activeAccountInfo?.instagram?.connected ? 'Meta Graph API Sync Active' : 'No Accounts Connected')}
+                </span>
               </div>
             </div>
           </div>

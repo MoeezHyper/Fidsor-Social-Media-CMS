@@ -65,32 +65,54 @@ const DEMO_POSTS = [
 
 export default function PublishedPosts() {
   const { token } = useAuth();
-  const [posts, setPosts] = useState(DEMO_POSTS);
+  const [livePosts, setLivePosts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [platformFilter, setPlatformFilter] = useState('all'); // 'all' | 'facebook' | 'instagram'
   const [sortBy, setSortBy] = useState('newest'); // 'newest' | 'oldest' | 'likes'
   const [selectedPostModal, setSelectedPostModal] = useState(null);
 
+  const [demoMode, setDemoMode] = useState(() => {
+    return localStorage.getItem('fidsor_demo_mode') === 'true';
+  });
+
+  useEffect(() => {
+    const handleDemoToggle = () => {
+      const isDemo = localStorage.getItem('fidsor_demo_mode') === 'true';
+      setDemoMode(isDemo);
+    };
+    window.addEventListener('fidsor_demo_mode_change', handleDemoToggle);
+    return () => window.removeEventListener('fidsor_demo_mode_change', handleDemoToggle);
+  }, []);
+
   const loadPosts = useCallback(async () => {
+    if (demoMode) {
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     try {
       const data = await fetchSocialPosts(token, true);
-      if (data && data.posts && data.posts.length > 0) {
-        setPosts(data.posts);
+      if (data && Array.isArray(data.posts)) {
+        setLivePosts(data.posts);
+      } else {
+        setLivePosts([]);
       }
     } catch (err) {
       console.error('Error fetching published posts:', err);
+      setLivePosts([]);
     } finally {
       setLoading(false);
     }
-  }, [token]);
+  }, [token, demoMode]);
 
   useEffect(() => {
     loadPosts();
   }, [loadPosts]);
 
-  const filteredPosts = posts.filter(post => {
+  const activePosts = demoMode ? DEMO_POSTS : livePosts;
+
+  const filteredPosts = activePosts.filter(post => {
     const matchesSearch = (post.caption || '').toLowerCase().includes(searchQuery.toLowerCase());
     const matchesPlatform = platformFilter === 'all' || post.platform === platformFilter;
     return matchesSearch && matchesPlatform;
@@ -117,7 +139,7 @@ export default function PublishedPosts() {
             <h1 className="page-title">Published Posts</h1>
             <span className="badge-pill-accent">
               <FileText size={14} />
-              Publishing History ({posts.length})
+              Publishing History ({activePosts.length})
             </span>
           </div>
           <p className="page-subtitle">
@@ -128,7 +150,7 @@ export default function PublishedPosts() {
 
       {/* Separate Refresh Feed Row (above search & filter) */}
       <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '1rem', marginBottom: '0.85rem' }}>
-        <button className="btn-refresh-secondary" onClick={loadPosts} title="Refresh Posts Feed">
+        <button className="btn-refresh-secondary" onClick={loadPosts} disabled={loading} title="Refresh Posts Feed">
           <RefreshCw size={15} className={loading ? 'spin-icon' : ''} />
           <span>Refresh Feed</span>
         </button>
@@ -158,21 +180,21 @@ export default function PublishedPosts() {
               className={`filter-pill ${platformFilter === 'all' ? 'active' : ''}`}
               onClick={() => setPlatformFilter('all')}
             >
-              All ({posts.length})
+              All ({activePosts.length})
             </button>
             <button
               className={`filter-pill ${platformFilter === 'facebook' ? 'active' : ''}`}
               onClick={() => setPlatformFilter('facebook')}
             >
               <Facebook size={13} style={{ display: 'inline', verticalAlign: 'middle', marginRight: '3px' }} />
-              Facebook ({posts.filter(p => p.platform === 'facebook').length})
+              Facebook ({activePosts.filter(p => p.platform === 'facebook').length})
             </button>
             <button
               className={`filter-pill ${platformFilter === 'instagram' ? 'active' : ''}`}
               onClick={() => setPlatformFilter('instagram')}
             >
               <Instagram size={13} style={{ display: 'inline', verticalAlign: 'middle', marginRight: '3px' }} />
-              Instagram ({posts.filter(p => p.platform === 'instagram').length})
+              Instagram ({activePosts.filter(p => p.platform === 'instagram').length})
             </button>
           </div>
 
@@ -192,77 +214,113 @@ export default function PublishedPosts() {
       </div>
 
       {/* Posts Grid */}
-      <div className="posts-grid" style={{ marginTop: 0 }}>
-        {sortedPosts.map(post => (
-          <div className="post-card" key={post.id}>
-            <div className="post-media-container" onClick={() => setSelectedPostModal(post)}>
-              {post.imageUrl ? (
-                <img
-                  src={post.imageUrl}
-                  alt="Published post thumbnail"
-                  className="post-thumbnail"
-                  loading="lazy"
-                />
-              ) : (
-                <div className="post-no-image">
-                  <FileText size={32} />
-                  <span>Text Post</span>
-                </div>
-              )}
+      {sortedPosts.length === 0 ? (
+        <div
+          className="panel-card"
+          style={{
+            textAlign: 'center',
+            padding: '3.5rem 1.5rem',
+            margin: '1.5rem 0',
+            borderRadius: 'var(--radius-lg)'
+          }}
+        >
+          <div
+            style={{
+              width: '56px',
+              height: '56px',
+              borderRadius: '50%',
+              background: 'var(--btn-secondary-bg)',
+              color: 'var(--text-muted)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              margin: '0 auto 1rem auto'
+            }}
+          >
+            <FileText size={28} />
+          </div>
+          <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--text-main)', marginBottom: '0.4rem' }}>
+            {demoMode ? 'No Matching Posts' : 'No Published Posts Found'}
+          </h3>
+          <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', maxWidth: '440px', margin: '0 auto' }}>
+            {demoMode
+              ? 'No posts matched your current search or platform filter.'
+              : 'No published posts were found on your connected social media accounts, or no accounts are connected in Live Mode.'}
+          </p>
+        </div>
+      ) : (
+        <div className="posts-grid" style={{ marginTop: 0 }}>
+          {sortedPosts.map(post => (
+            <div className="post-card" key={post.id}>
+              <div className="post-media-container" onClick={() => setSelectedPostModal(post)}>
+                {post.imageUrl ? (
+                  <img
+                    src={post.imageUrl}
+                    alt="Published post thumbnail"
+                    className="post-thumbnail"
+                    loading="lazy"
+                  />
+                ) : (
+                  <div className="post-no-image">
+                    <FileText size={32} />
+                    <span>Text Post</span>
+                  </div>
+                )}
 
-              <div className="post-media-overlay">
-                <span className="overlay-preview-btn">
-                  <Eye size={16} /> View Post Details
+                <div className="post-media-overlay">
+                  <span className="overlay-preview-btn">
+                    <Eye size={16} /> View Post Details
+                  </span>
+                </div>
+
+                <span className={`post-platform-badge ${post.platform === 'facebook' ? 'fb-bg' : 'ig-bg'}`}>
+                  {post.platform === 'facebook' ? <Facebook size={12} /> : <Instagram size={12} />}
+                  {post.platform === 'facebook' ? 'Facebook' : 'Instagram'}
                 </span>
               </div>
 
-              <span className={`post-platform-badge ${post.platform === 'facebook' ? 'fb-bg' : 'ig-bg'}`}>
-                {post.platform === 'facebook' ? <Facebook size={12} /> : <Instagram size={12} />}
-                {post.platform === 'facebook' ? 'Facebook' : 'Instagram'}
-              </span>
-            </div>
-
-            <div className="post-card-body">
-              <div className="post-timestamp">
-                <Calendar size={13} />
-                {new Date(post.timestamp).toLocaleDateString(undefined, {
-                  month: 'short',
-                  day: 'numeric',
-                  year: 'numeric',
-                  hour: '2-digit',
-                  minute: '2-digit'
-                })}
-              </div>
-
-              <p className="post-caption-snippet">
-                {post.caption || <em className="text-muted">No caption provided</em>}
-              </p>
-
-              <div className="post-metrics-bar">
-                <div className="post-metric-item" title="Likes Count">
-                  <Heart size={15} className="heart-icon" />
-                  <span>{(post.likeCount || 0).toLocaleString()}</span>
-                </div>
-                <div className="post-metric-item" title="Comments Count">
-                  <MessageSquare size={15} className="comment-icon" />
-                  <span>{(post.commentCount || 0).toLocaleString()}</span>
+              <div className="post-card-body">
+                <div className="post-timestamp">
+                  <Calendar size={13} />
+                  {new Date(post.timestamp).toLocaleDateString(undefined, {
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                  })}
                 </div>
 
-                <a
-                  href={post.permalink}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="permalink-link"
-                  title="Open Live Post on Social Network"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <span>View Live</span> <ExternalLink size={13} />
-                </a>
+                <p className="post-caption-snippet">
+                  {post.caption || <em className="text-muted">No caption provided</em>}
+                </p>
+
+                <div className="post-metrics-bar">
+                  <div className="post-metric-item" title="Likes Count">
+                    <Heart size={15} className="heart-icon" />
+                    <span>{(post.likeCount || 0).toLocaleString()}</span>
+                  </div>
+                  <div className="post-metric-item" title="Comments Count">
+                    <MessageSquare size={15} className="comment-icon" />
+                    <span>{(post.commentCount || 0).toLocaleString()}</span>
+                  </div>
+
+                  <a
+                    href={post.permalink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="permalink-link"
+                    title="Open Live Post on Social Network"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <span>View Live</span> <ExternalLink size={13} />
+                  </a>
+                </div>
               </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
 
       {/* Interactive Post Detail Portal Modal */}
       {selectedPostModal && ReactDOM.createPortal(

@@ -77,6 +77,8 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const token = 'cookie';
+
   const getToken = () => {
     return 'cookie';
   };

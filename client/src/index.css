@@ -102,6 +102,13 @@ body {
   background: rgba(255, 255, 255, 0.3);
 }
 
+[data-theme="light"] ::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+}
+[data-theme="light"] ::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
 /* Layout Grid */
 .app-container {
   display: flex;
@@ -1752,12 +1759,24 @@ body {
 
 @media (max-width: 640px) {
   .header {
-    padding: 0 0.85rem;
+    padding: 0 0.75rem;
     height: 62px;
   }
 
+  .header-left {
+    gap: 0.5rem;
+  }
+
+  .header-brand-wrapper {
+    gap: 0.4rem;
+  }
+
+  .header-brand-logo {
+    max-height: 24px;
+  }
+
   .header-title {
-    font-size: 1.05rem;
+    display: none;
   }
 
   .header-badge {
@@ -1776,6 +1795,17 @@ body {
     padding: 0.25rem;
     background: transparent;
     border: none;
+  }
+
+  .demo-live-toggle-btn {
+    padding: 0.35rem 0.6rem !important;
+    font-size: 0.75rem !important;
+    gap: 0.3rem !important;
+    flex-shrink: 0;
+  }
+
+  .header-actions {
+    gap: 0.4rem;
   }
 
   .page-wrapper {
@@ -1909,6 +1939,21 @@ body {
   }
 }
 
+@media (max-width: 380px) {
+  .header {
+    padding: 0 0.5rem;
+  }
+
+  .header-actions {
+    gap: 0.3rem;
+  }
+
+  .demo-live-toggle-btn {
+    padding: 0.3rem 0.5rem !important;
+    font-size: 0.72rem !important;
+  }
+}
+
 @media (max-width: 360px) {
   .page-wrapper {
     padding: 0.75rem 0.5rem;
@@ -1922,6 +1967,17 @@ body {
   .btn-secondary {
     padding: 0.4rem 0.75rem;
     font-size: 0.8rem;
+  }
+}
+
+@media (max-width: 340px) {
+  .header-brand-logo {
+    max-height: 20px;
+  }
+
+  .demo-live-toggle-btn {
+    padding: 0.25rem 0.4rem !important;
+    font-size: 0.68rem !important;
   }
 }
 
