@@ -391,7 +391,7 @@ export default function SocialAnalytics() {
         </h2>
 
         <div className="kpi-grid">
-          <div className="kpi-card">
+          <div className="kpi-card" style={{ height: '100%' }}>
             <div className="kpi-icon-wrapper purple">
               <FileText size={24} />
             </div>
@@ -400,10 +400,15 @@ export default function SocialAnalytics() {
               <h3 className="kpi-value">
                 {loading ? <span className="skeleton-line" /> : (demoMode ? DEMO_ANALYTICS?.summary?.totalPosts : (activeAnalytics?.summary?.totalPosts ?? activePostsList.length)).toLocaleString()}
               </h3>
+              <div className="kpi-breakdown" style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap', marginTop: '0.35rem' }}>
+                <span style={{ fontSize: '0.72rem', fontWeight: 600, color: 'var(--text-muted)', background: 'var(--dropzone-bg)', border: '1px solid var(--border-color)', padding: '0.15rem 0.5rem', borderRadius: 'var(--radius-full)' }}>
+                  Facebook & Instagram Posts
+                </span>
+              </div>
             </div>
           </div>
 
-          <div className="kpi-card">
+          <div className="kpi-card" style={{ height: '100%' }}>
             <div className="kpi-icon-wrapper blue">
               <Users size={24} />
             </div>
@@ -412,18 +417,46 @@ export default function SocialAnalytics() {
               <h3 className="kpi-value">
                 {loading ? <span className="skeleton-line" /> : (demoMode ? DEMO_ANALYTICS?.summary?.totalFollowers : (fbFollowers + igFollowers)).toLocaleString()}
               </h3>
-              <div className="kpi-breakdown">
-                <span className="breakdown-tag fb-text">
-                  FB Likes: {(demoMode ? (DEMO_ANALYTICS?.platforms?.facebook?.followersCount ?? 0) : fbFollowers).toLocaleString()}
+              <div className="kpi-breakdown" style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap', marginTop: '0.35rem' }}>
+                <span
+                  style={{
+                    fontSize: '0.72rem',
+                    fontWeight: 700,
+                    color: '#1877f2',
+                    background: 'rgba(24, 119, 242, 0.12)',
+                    border: '1px solid rgba(24, 119, 242, 0.3)',
+                    padding: '0.15rem 0.5rem',
+                    borderRadius: 'var(--radius-full)',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.3rem'
+                  }}
+                >
+                  <Facebook size={11} />
+                  <span>FB Likes: {(demoMode ? (DEMO_ANALYTICS?.platforms?.facebook?.followersCount ?? 0) : fbFollowers).toLocaleString()}</span>
                 </span>
-                <span className="breakdown-tag ig-text">
-                  IG Followers: {(demoMode ? (DEMO_ANALYTICS?.platforms?.instagram?.followersCount ?? 0) : igFollowers).toLocaleString()}
+                <span
+                  style={{
+                    fontSize: '0.72rem',
+                    fontWeight: 700,
+                    color: '#e1306c',
+                    background: 'rgba(225, 48, 108, 0.12)',
+                    border: '1px solid rgba(225, 48, 108, 0.3)',
+                    padding: '0.15rem 0.5rem',
+                    borderRadius: 'var(--radius-full)',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.3rem'
+                  }}
+                >
+                  <Instagram size={11} />
+                  <span>IG Followers: {(demoMode ? (DEMO_ANALYTICS?.platforms?.instagram?.followersCount ?? 0) : igFollowers).toLocaleString()}</span>
                 </span>
               </div>
             </div>
           </div>
 
-          <div className="kpi-card">
+          <div className="kpi-card" style={{ height: '100%' }}>
             <div className="kpi-icon-wrapper green">
               <Layers size={24} />
             </div>
@@ -432,9 +465,10 @@ export default function SocialAnalytics() {
               <h3 className="kpi-value">
                 {loading ? <span className="skeleton-line" /> : (demoMode ? '2 / 2' : `${(activeAccountInfo?.facebook?.connected ? 1 : 0) + (activeAccountInfo?.instagram?.connected ? 1 : 0)} / 2`)}
               </h3>
-              <div className="kpi-breakdown">
-                <span className="breakdown-tag text-muted">
-                  {demoMode ? 'Meta Graph API Sync Active' : (activeAccountInfo?.facebook?.connected || activeAccountInfo?.instagram?.connected ? 'Meta Graph API Sync Active' : 'No Accounts Connected')}
+              <div className="kpi-breakdown" style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap', marginTop: '0.35rem' }}>
+                <span style={{ fontSize: '0.72rem', fontWeight: 600, color: 'var(--success-color)', background: 'var(--success-bg)', border: '1px solid rgba(16, 185, 129, 0.3)', padding: '0.15rem 0.5rem', borderRadius: 'var(--radius-full)', display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}>
+                  <CheckCircle2 size={11} />
+                  <span>Connected & Active</span>
                 </span>
               </div>
             </div>
@@ -448,10 +482,10 @@ export default function SocialAnalytics() {
           <TrendingUp size={20} /> Audience Growth & Engagement Trends
         </h2>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: '1.5rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: '1.5rem', alignItems: 'stretch' }}>
           {/* Follower Growth Trend Chart */}
-          <div className="panel-card" style={{ padding: '1.5rem' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
+          <div className="panel-card" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', height: '100%' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
               <div>
                 <h3 style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--text-main)', margin: 0 }}>Follower Growth Curve</h3>
                 <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', margin: '0.2rem 0 0 0' }}>Daily cumulative reach expansion</p>
@@ -466,8 +500,8 @@ export default function SocialAnalytics() {
           </div>
 
           {/* Platform Performance Comparison */}
-          <div className="panel-card" style={{ padding: '1.5rem' }}>
-            <div style={{ marginBottom: '1.25rem' }}>
+          <div className="panel-card" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', height: '100%' }}>
+            <div style={{ marginBottom: '1rem' }}>
               <h3 style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--text-main)', margin: 0 }}>
                 Platform Engagement Rate Comparison
               </h3>
@@ -476,10 +510,10 @@ export default function SocialAnalytics() {
               </p>
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem', marginTop: '1rem' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', flex: 1, gap: '1rem' }}>
               {/* Instagram Bar */}
               <div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.35rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.4rem' }}>
                   <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'var(--text-main)' }}>
                     <Instagram size={15} style={{ color: '#e1306c' }} /> Instagram Business
                   </span>
@@ -492,7 +526,7 @@ export default function SocialAnalytics() {
 
               {/* Facebook Bar */}
               <div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.35rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.4rem' }}>
                   <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'var(--text-main)' }}>
                     <Facebook size={15} style={{ color: '#1877f2' }} /> Facebook Page
                   </span>
@@ -503,11 +537,11 @@ export default function SocialAnalytics() {
                 </div>
               </div>
 
-              {/* Cross-Platform Average */}
-              <div style={{ marginTop: '0.5rem', paddingTop: '0.85rem', borderTop: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>API Status</span>
-                <span style={{ fontSize: '0.85rem', fontWeight: 700, color: demoMode ? '#f59e0b' : 'var(--success-color)' }}>
-                  {demoMode ? 'Demo View Mode' : 'Live Meta Graph API Connected'}
+              {/* Cross-Platform Average Footer */}
+              <div style={{ marginTop: 'auto', paddingTop: '0.75rem', borderTop: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.78rem', color: 'var(--text-muted)' }}>
+                <span>Cross-Platform Avg Rate</span>
+                <span style={{ fontWeight: 700, color: 'var(--accent-primary)' }}>
+                  {(((parseFloat(liveIgRate) || 0) + (parseFloat(liveFbRate) || 0)) / 2).toFixed(1)}%
                 </span>
               </div>
             </div>

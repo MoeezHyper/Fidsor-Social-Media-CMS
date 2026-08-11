@@ -50,7 +50,7 @@ export default function Sidebar({ activeTab, onSelectTab, isOpen, onClose }) {
           <button
             className={`nav-item ${activeTab === 'analytics' || activeTab === 'dashboard' ? 'active' : ''}`}
             onClick={() => onSelectTab('analytics')}
-            style={{ background: 'none', border: 'none', width: '100%', cursor: 'pointer', textAlign: 'left' }}
+            style={{ background: 'none', border: 'none', width: '100%', cursor: 'pointer', textAlign: 'left', justifyContent: 'flex-start' }}
             id="nav-social-analytics"
           >
             <LayoutDashboard size={18} />
@@ -60,7 +60,7 @@ export default function Sidebar({ activeTab, onSelectTab, isOpen, onClose }) {
           <button
             className={`nav-item ${activeTab === 'publisher' ? 'active' : ''}`}
             onClick={() => onSelectTab('publisher')}
-            style={{ background: 'none', border: 'none', width: '100%', cursor: 'pointer', textAlign: 'left' }}
+            style={{ background: 'none', border: 'none', width: '100%', cursor: 'pointer', textAlign: 'left', justifyContent: 'flex-start' }}
             id="nav-social-publisher"
           >
             <Share2 size={18} />
@@ -71,7 +71,7 @@ export default function Sidebar({ activeTab, onSelectTab, isOpen, onClose }) {
             <button
               className={`nav-item ${activeTab === 'users' ? 'active' : ''}`}
               onClick={() => onSelectTab('users')}
-              style={{ background: 'none', border: 'none', width: '100%', cursor: 'pointer', textAlign: 'left' }}
+              style={{ background: 'none', border: 'none', width: '100%', cursor: 'pointer', textAlign: 'left', justifyContent: 'flex-start' }}
               id="nav-user-management"
             >
               <Users size={18} />
@@ -82,7 +82,7 @@ export default function Sidebar({ activeTab, onSelectTab, isOpen, onClose }) {
           <button
             className={`nav-item ${activeTab === 'library' ? 'active' : ''}`}
             onClick={() => onSelectTab('library')}
-            style={{ background: 'none', border: 'none', width: '100%', cursor: 'pointer', textAlign: 'left' }}
+            style={{ background: 'none', border: 'none', width: '100%', cursor: 'pointer', textAlign: 'left', justifyContent: 'flex-start' }}
             id="nav-content-library"
           >
             <FileText size={18} />
@@ -92,7 +92,7 @@ export default function Sidebar({ activeTab, onSelectTab, isOpen, onClose }) {
           <button
             className={`nav-item ${activeTab === 'posts' ? 'active' : ''}`}
             onClick={() => onSelectTab('posts')}
-            style={{ background: 'none', border: 'none', width: '100%', cursor: 'pointer', textAlign: 'left' }}
+            style={{ background: 'none', border: 'none', width: '100%', cursor: 'pointer', textAlign: 'left', justifyContent: 'flex-start' }}
             id="nav-published-posts"
           >
             <FileText size={18} />
@@ -102,7 +102,7 @@ export default function Sidebar({ activeTab, onSelectTab, isOpen, onClose }) {
           <button
             className={`nav-item ${activeTab === 'settings' ? 'active' : ''}`}
             onClick={() => onSelectTab('settings')}
-            style={{ background: 'none', border: 'none', width: '100%', cursor: 'pointer', textAlign: 'left', marginTop: 'auto' }}
+            style={{ background: 'none', border: 'none', width: '100%', cursor: 'pointer', textAlign: 'left', justifyContent: 'flex-start', marginTop: 'auto' }}
             id="nav-settings"
           >
             <Settings size={18} />

@@ -25,6 +25,8 @@ export default function UserManagement() {
   const [canFb, setCanFb] = useState(true);
   const [canIg, setCanIg] = useState(true);
   const [creating, setCreating] = useState(false);
+  const [modalError, setModalError] = useState(null);
+  const [modalSuccessMsg, setModalSuccessMsg] = useState(null);
 
   const loadUsers = async () => {
     setLoading(true);
@@ -44,16 +46,39 @@ export default function UserManagement() {
     loadUsers();
   }, []);
 
+  useEffect(() => {
+    if (showCreateModal) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [showCreateModal]);
+
+  const handleOpenCreateModal = () => {
+    setModalError(null);
+    setModalSuccessMsg(null);
+    setShowCreateModal(true);
+  };
+
   const handleCreateUser = async (e) => {
     e.preventDefault();
+    setModalError(null);
+    setModalSuccessMsg(null);
+
     if (!newUsername.trim() || !newPassword) {
-      setError('Please provide both username and password.');
+      setModalError('Please provide both username and password.');
+      return;
+    }
+
+    if (newPassword.length < 6) {
+      setModalError('Password must be at least 6 characters long.');
       return;
     }
 
     setCreating(true);
-    setError(null);
-    setSuccessMsg(null);
 
     try {
       await createUserApi(
@@ -66,16 +91,22 @@ export default function UserManagement() {
         getToken()
       );
 
-      setSuccessMsg(`User '${newUsername.trim()}' created successfully!`);
+      const successStr = `User '${newUsername.trim()}' created successfully!`;
+      setModalSuccessMsg(successStr);
+      setSuccessMsg(successStr);
       setNewUsername('');
       setNewPassword('');
       setCanFb(true);
       setCanIg(true);
-      setShowCreateModal(false);
       await loadUsers();
+
+      setTimeout(() => {
+        setShowCreateModal(false);
+        setModalSuccessMsg(null);
+      }, 1400);
     } catch (err) {
       console.error('Create user error:', err);
-      setError(err.message || 'Failed to create user.');
+      setModalError(err.message || 'Failed to create user.');
     } finally {
       setCreating(false);
     }
@@ -165,7 +196,7 @@ export default function UserManagement() {
               Access Control
             </span>
           </div>
-          <p className="page-subtitle" style={{ marginTop: '0.4rem' }}>
+          <p className="page-subtitle">
             Manage user accounts, credentials, and platform publishing access rights.
           </p>
         </div>
@@ -249,7 +280,7 @@ export default function UserManagement() {
           <div className="header-action-toolbar">
             <button
               className="btn-add-user-primary"
-              onClick={() => setShowCreateModal(true)}
+              onClick={handleOpenCreateModal}
               id="open-create-user-modal"
             >
               <UserPlus size={16} />
@@ -330,11 +361,7 @@ export default function UserManagement() {
             <span>{searchQuery || roleFilter !== 'all' ? 'No users match your filter criteria.' : 'No user accounts found.'}</span>
           </div>
         ) : (
-          <>
-            <div className="mobile-table-swipe-hint">
-              ← Swipe table left/right to view rights & actions →
-            </div>
-            <div className="table-responsive">
+          <div className="table-responsive">
               <table className="user-minimal-table">
                 <thead>
                   <tr>
@@ -417,7 +444,6 @@ export default function UserManagement() {
                 </tbody>
               </table>
             </div>
-          </>
         )}
       </div>
 
@@ -444,6 +470,19 @@ export default function UserManagement() {
             </div>
 
             <form onSubmit={handleCreateUser} className="user-create-form">
+              {modalError && (
+                <div className="alert-banner alert-banner-danger" style={{ marginBottom: '1rem', padding: '0.65rem 0.85rem' }}>
+                  <AlertCircle size={16} style={{ flexShrink: 0 }} />
+                  <span style={{ fontSize: '0.85rem' }}>{modalError}</span>
+                </div>
+              )}
+
+              {modalSuccessMsg && (
+                <div className="alert-banner alert-banner-success" style={{ marginBottom: '1rem', padding: '0.65rem 0.85rem' }}>
+                  <CheckCircle2 size={16} style={{ flexShrink: 0 }} />
+                  <span style={{ fontSize: '0.85rem' }}>{modalSuccessMsg}</span>
+                </div>
+              )}
               <div className="form-group">
                 <label htmlFor="new-username" className="form-label">
                   Username

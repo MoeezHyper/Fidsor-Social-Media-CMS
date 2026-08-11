@@ -38,7 +38,7 @@ export default function Settings() {
               App Preferences
             </span>
           </div>
-          <p className="page-subtitle" style={{ marginTop: '0.4rem', fontSize: '0.825rem' }}>
+          <p className="page-subtitle">
             Configure default publishing targets, live sync intervals, and system notification preferences.
           </p>
         </div>

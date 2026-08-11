@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { User, KeyRound, AlertCircle, ArrowRight, CheckCircle2, Sparkles } from 'lucide-react';
+import { User, KeyRound, AlertCircle, ArrowRight, CheckCircle2, Sparkles, Check } from 'lucide-react';
 
 export default function Login() {
   const { login } = useAuth();
@@ -279,42 +279,58 @@ export default function Login() {
                 </div>
               </div>
 
-              {/* Remember Me Checkbox */}
+              {/* Refined Custom Remember Me Checkbox */}
               <div
                 style={{
                   display: 'flex',
                   alignItems: 'center',
                   marginBottom: '1.5rem',
-                  fontSize: '0.85rem'
+                  fontSize: '0.875rem'
                 }}
               >
-                <label
-                  htmlFor="remember-me-checkbox"
+                <div
+                  onClick={() => setRememberMe(!rememberMe)}
                   style={{
-                    display: 'flex',
+                    display: 'inline-flex',
                     alignItems: 'center',
-                    gap: '0.55rem',
+                    gap: '0.65rem',
                     color: 'var(--text-main)',
                     cursor: 'pointer',
                     userSelect: 'none',
                     fontWeight: 500
                   }}
+                  role="checkbox"
+                  aria-checked={rememberMe}
+                  tabIndex={0}
                 >
-                  <input
-                    id="remember-me-checkbox"
-                    type="checkbox"
-                    checked={rememberMe}
-                    onChange={(e) => setRememberMe(e.target.checked)}
+                  <div
                     style={{
-                      width: '16px',
-                      height: '16px',
-                      accentColor: 'var(--accent-primary)',
-                      cursor: 'pointer',
-                      borderRadius: '4px'
+                      width: '18px',
+                      height: '18px',
+                      borderRadius: '5px',
+                      background: rememberMe ? 'var(--accent-gradient)' : 'var(--dropzone-bg)',
+                      border: `1.5px solid ${rememberMe ? 'transparent' : 'var(--border-color)'}`,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      transition: 'all 0.2s ease',
+                      boxShadow: rememberMe ? '0 2px 8px rgba(99, 102, 241, 0.35)' : 'none'
                     }}
-                  />
-                  <span>Remember me</span>
-                </label>
+                  >
+                    {rememberMe && <Check size={13} color="#ffffff" strokeWidth={3} />}
+                  </div>
+                  <span
+                    style={{
+                      fontSize: '0.875rem',
+                      fontWeight: 600,
+                      color: rememberMe ? 'var(--text-main)' : 'var(--text-muted)',
+                      letterSpacing: '0.01em',
+                      transition: 'color 0.2s ease'
+                    }}
+                  >
+                    Keep me signed in
+                  </span>
+                </div>
               </div>
 
               <button

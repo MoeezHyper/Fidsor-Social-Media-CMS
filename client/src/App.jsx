@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { AuthProvider } from './context/AuthContext';
+import { AuthProvider, useAuth } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
@@ -11,6 +11,7 @@ import PublishedPosts from './pages/PublishedPosts';
 import Settings from './pages/Settings';
 
 function MainLayout() {
+  const { user } = useAuth();
   const [theme, setTheme] = useState(() => {
     return localStorage.getItem('fidsor-theme') || 'dark';
   });
@@ -22,6 +23,13 @@ function MainLayout() {
     document.documentElement.setAttribute('data-theme', theme);
     localStorage.setItem('fidsor-theme', theme);
   }, [theme]);
+
+  // Always default to Social Analytics page when user signs in
+  useEffect(() => {
+    if (user) {
+      setActiveTab('analytics');
+    }
+  }, [user]);
 
   const toggleTheme = () => {
     setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'));

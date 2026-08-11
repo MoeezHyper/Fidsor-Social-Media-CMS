@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { User, Bell, Sun, Moon, LogOut, Menu, X, ChevronDown, CheckCircle2, Sparkles } from 'lucide-react';
 
@@ -8,8 +8,29 @@ export default function Header({ theme, toggleTheme, toggleSidebar, isSidebarOpe
   const [notifMenuOpen, setNotifMenuOpen] = useState(false);
   const [demoMode, setDemoMode] = useState(() => localStorage.getItem('fidsor_demo_mode') === 'true');
 
+  const userMenuRef = useRef(null);
+  const notifMenuRef = useRef(null);
+
   const username = profile?.username || user?.user_metadata?.username || user?.email?.split('@')[0] || 'Administrator';
   const role = profile?.role || 'user';
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target)) {
+        setUserMenuOpen(false);
+      }
+      if (notifMenuRef.current && !notifMenuRef.current.contains(event.target)) {
+        setNotifMenuOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('touchstart', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
+    };
+  }, []);
 
   const handleToggleDemoMode = () => {
     const next = !demoMode;
@@ -57,7 +78,7 @@ export default function Header({ theme, toggleTheme, toggleSidebar, isSidebarOpe
         </button>
 
         {/* Notifications Icon Button & Dropdown Wrapper */}
-        <div className="header-notif-wrapper">
+        <div className="header-notif-wrapper" ref={notifMenuRef}>
           <button
             className={`btn-secondary header-icon-btn ${notifMenuOpen ? 'active' : ''}`}
             onClick={() => {
@@ -98,7 +119,7 @@ export default function Header({ theme, toggleTheme, toggleSidebar, isSidebarOpe
         </div>
 
         {/* Unified Admin User Dropdown Trigger */}
-        <div className="header-user-wrapper">
+        <div className="header-user-wrapper" ref={userMenuRef}>
           <div
             className={`header-user-pill ${userMenuOpen ? 'active' : ''}`}
             onClick={() => {
@@ -113,17 +134,6 @@ export default function Header({ theme, toggleTheme, toggleSidebar, isSidebarOpe
             <div className="header-user-avatar">
               {username.charAt(0).toUpperCase()}
             </div>
-
-            <div className="header-user-details">
-              <span className="header-user-name">
-                {username}
-              </span>
-              <span className="header-user-role">
-                {role}
-              </span>
-            </div>
-
-            <ChevronDown size={15} className={`chevron-icon ${userMenuOpen ? 'rotated' : ''}`} />
           </div>
 
           {/* Admin Popover Dropdown Menu */}

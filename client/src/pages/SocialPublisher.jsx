@@ -5,7 +5,7 @@ import PlatformSelector from '../components/PlatformSelector';
 import PublishingStatusModal from '../components/PublishingStatusModal';
 import { publishSocialPost } from '../api/socialApi';
 import { useAuth } from '../context/AuthContext';
-import { Send, Sparkles, AlertCircle } from 'lucide-react';
+import { Send, Sparkles, AlertCircle, RotateCcw } from 'lucide-react';
 
 function playPublishSuccessChime() {
   try {
@@ -120,18 +120,30 @@ export default function SocialPublisher({ initialData }) {
 
   return (
     <div className="page-wrapper">
-      <div className="page-header-bar">
+      <div className="page-header-bar" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '1rem', flexWrap: 'wrap' }}>
         <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap' }}>
-            <h1 className="page-title">
-              Social Media Publisher
-            </h1>
-            <Sparkles size={22} style={{ color: 'var(--accent-primary)' }} />
+          <div className="header-title-wrapper">
+            <h1 className="page-title">Social Media Publisher</h1>
+            <span className="badge-pill-accent">
+              <Sparkles size={14} />
+              Publishing Studio
+            </span>
           </div>
           <p className="page-subtitle">
-            Compose and publish image posts directly to your Facebook Page and Instagram Business accounts using Meta Graph API.
+            Compose and publish image posts directly to your Facebook Page and Instagram Business accounts.
           </p>
         </div>
+
+        <button
+          type="button"
+          className="btn-secondary"
+          onClick={handleResetForm}
+          title="Reset image, caption, and platform selection"
+          style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', padding: '0.55rem 1rem', fontSize: '0.85rem' }}
+        >
+          <RotateCcw size={15} />
+          <span>Reset Post</span>
+        </button>
       </div>
 
       <form onSubmit={handlePublishSubmit}>

@@ -110,6 +110,17 @@ export default function PublishedPosts() {
     loadPosts();
   }, [loadPosts]);
 
+  useEffect(() => {
+    if (selectedPostModal) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [selectedPostModal]);
+
   const activePosts = demoMode ? DEMO_POSTS : livePosts;
 
   const filteredPosts = activePosts.filter(post => {
@@ -268,7 +279,7 @@ export default function PublishedPosts() {
                 )}
 
                 <div className="post-media-overlay">
-                  <span className="overlay-preview-btn">
+                  <span className="overlay-preview-btn" style={{ textDecoration: 'none' }}>
                     <Eye size={16} /> View Post Details
                   </span>
                 </div>
@@ -378,15 +389,29 @@ export default function PublishedPosts() {
                   </div>
                 </div>
 
-                <div className="modal-footer">
+                <div className="modal-footer" style={{ marginTop: 'auto', display: 'flex', justifyContent: 'center', width: '100%', paddingTop: '1.25rem' }}>
                   <a
                     href={selectedPostModal.permalink}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="btn-primary modal-live-btn-compact"
+                    className="btn-primary"
+                    style={{
+                      width: '100%',
+                      maxWidth: '360px',
+                      justifyContent: 'center',
+                      padding: '0.75rem 1.25rem',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.5rem',
+                      margin: '0 auto',
+                      borderRadius: 'var(--radius-md)',
+                      fontSize: '0.9rem',
+                      fontWeight: 700,
+                      textDecoration: 'none'
+                    }}
                   >
                     <span>View Post on {selectedPostModal.platform === 'facebook' ? 'Facebook' : 'Instagram'}</span>
-                    <ExternalLink size={14} />
+                    <ExternalLink size={16} />
                   </a>
                 </div>
               </div>

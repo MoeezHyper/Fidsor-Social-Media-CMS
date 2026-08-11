@@ -1,7 +1,18 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { CheckCircle2, XCircle, Facebook, Instagram, X } from 'lucide-react';
 
 export default function PublishingStatusModal({ results, onClose, onReset }) {
+  useEffect(() => {
+    if (results && results.length > 0) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [results]);
+
   if (!results || results.length === 0) return null;
 
   const hasErrors = results.some((r) => !r.success);
